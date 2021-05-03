@@ -1,0 +1,54 @@
+buildscript {
+	ext.kotlinVersion = '1.4.32'
+	ext.unikornVersion = '7acdcd6f54e152e96d0ac9dfb9c19cdd5d66538a'
+
+	repositories {
+		jcenter()
+	}
+
+	dependencies {
+		classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlinVersion"
+	}
+}
+
+subprojects {
+	apply plugin: 'kotlin'
+
+	repositories {
+		jcenter()
+		mavenCentral()
+		maven {
+			name 'm2-dv8tion'
+			url 'https://m2.dv8tion.net/releases'
+		}
+		maven { url 'https://jitpack.io' }
+	}
+
+	compileKotlin {
+		kotlinOptions {
+			javaParameters = true
+			freeCompilerArgs = [
+					'-Xuse-experimental=kotlin.ExperimentalUnsignedTypes',
+					'-Xopt-in=kotlin.time.ExperimentalTime',
+					'-XXLanguage:+InlineClasses'
+			]
+		}
+	}
+
+	tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinCompile).all {
+		kotlinOptions {
+			jvmTarget = "1.8"
+		}
+	}
+
+	dependencies {
+		implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8:$kotlinVersion"
+		implementation "org.jetbrains.kotlin:kotlin-reflect:$kotlinVersion"
+		testImplementation 'org.junit.jupiter:junit-jupiter-api:5.3.2'
+		testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.3.2'
+
+		api "com.github.Shockah.Unikorn:core:$unikornVersion"
+		api "com.github.Shockah.Unikorn:plugin:$unikornVersion"
+		api "com.github.Shockah.Unikorn:dependency:$unikornVersion"
+	}
+}

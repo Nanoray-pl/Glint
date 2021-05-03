@@ -1,0 +1,26 @@
+ext.hopliteVersion = '1.4.0'
+
+dependencies {
+	api "com.github.Shockah.Unikorn:core:$unikornVersion"
+	api "com.github.Shockah.Unikorn:plugin:$unikornVersion"
+	api "com.github.Shockah.Unikorn:dependency:$unikornVersion"
+
+//	api 'net.dv8tion:JDA:4.2.1_261'
+	api 'com.github.dv8fromtheworld:jda:5951675256d2418ed50fdfebc540438c4f6d001e'
+	api 'com.xenomachina:kotlin-argparser:2.0.7'
+
+	api "com.sksamuel.hoplite:hoplite-core:$hopliteVersion"
+	runtimeOnly "com.sksamuel.hoplite:hoplite-json:$hopliteVersion"
+	runtimeOnly "com.sksamuel.hoplite:hoplite-yaml:$hopliteVersion"
+	runtimeOnly "com.sksamuel.hoplite:hoplite-toml:$hopliteVersion"
+}
+
+test {
+	useJUnitPlatform()
+
+	dependsOn 'cleanTest'
+
+	testLogging {
+		events "passed", "skipped", "failed"
+	}
+}

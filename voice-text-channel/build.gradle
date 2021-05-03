@@ -1,0 +1,13 @@
+dependencies {
+	api project(':core')
+}
+
+test {
+	useJUnitPlatform()
+
+	dependsOn 'cleanTest'
+
+	testLogging {
+		events "passed", "skipped", "failed"
+	}
+}
