@@ -29,14 +29,16 @@ class ConfigManagerImpl(
 
 	override fun <T: Any> getConfig(type: KClass<T>, name: String): T? {
 		val extensions = listOf("json", "yml", "yaml", "toml", "props", "properties")
-		val configSource = when (val configSource = ConfigSource.fromPaths(getPathsForConfig(name, extensions))) {
-			is Validated.Invalid -> return null
-			is Validated.Valid -> configSource.value
+		for (extension in extensions) {
+			val configSource = when (val configSource = ConfigSource.fromPaths(listOf(configPath.resolve("${name}.${extension}")))) {
+				is Validated.Invalid -> continue
+				is Validated.Valid -> configSource.value
+			}
+			return when (val config = configLoader.loadConfig(type, configSource)) {
+				is Validated.Valid -> config.value
+				is Validated.Invalid -> null
+			}
 		}
-		return configLoader.loadConfig(type, configSource).mapInvalid { null }.getUnsafe()
-	}
-
-	private fun getPathsForConfig(name: String, extensions: List<String>): List<Path> {
-		return extensions.map { configPath.resolve("${name}.$it") }
+		return null
 	}
 }

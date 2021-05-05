@@ -1,16 +1,11 @@
 package pl.nanoray.glint.ranking
 
 import pl.shockah.unikorn.plugin.Plugin
-import pl.shockah.unikorn.plugin.PluginInfo
-import pl.shockah.unikorn.plugin.PluginManager
 import java.util.concurrent.locks.ReentrantReadWriteLock
 import kotlin.concurrent.read
 import kotlin.concurrent.write
 
-class RankingPlugin(
-		manager: PluginManager,
-		info: PluginInfo
-): Plugin(manager, info), MutableRankingManager {
+class RankingPlugin: Plugin, MutableRankingManager {
 	private val lock = ReentrantReadWriteLock()
 	private val providers = mutableMapOf<RankingType, RankingProvider<*>>()
 

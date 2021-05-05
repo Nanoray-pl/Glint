@@ -1,5 +1,6 @@
 package pl.nanoray.glint.voicetextchannel
 
+import io.reactivex.rxjava3.core.Completable
 import pl.nanoray.glint.jdaextensions.TextChannelIdentifier
 import pl.nanoray.glint.jdaextensions.VoiceChannelIdentifier
 import pl.nanoray.glint.utilities.WithDefault
@@ -18,18 +19,13 @@ interface VoiceTextChannelManager {
 	fun getMappingForTextChannel(textChannel: TextChannelIdentifier): ChannelMapping?
 }
 
-interface MutableVoiceTextChannelManager: VoiceTextChannelManager {
+interface WritableVoiceTextChannelManager: VoiceTextChannelManager {
 	fun linkTextChannelToVoiceChannel(
 			textChannel: TextChannelIdentifier,
 			voiceChannel: VoiceChannelIdentifier,
 			configuration: WithDefault<ChannelMapping.Configuration>
-	)
+	): Completable
 
-	fun createLinkedTextChannelForVoiceChannel(
-			voiceChannel: VoiceChannelIdentifier,
-			configuration: WithDefault<ChannelMapping.Configuration>
-	): TextChannelIdentifier
-
-	fun unlinkTextChannelFromVoiceChannel(textChannel: TextChannelIdentifier)
-	fun unlinkVoiceChannelFromTextChannel(voiceChannel: VoiceChannelIdentifier)
+	fun unlinkTextChannelFromVoiceChannel(textChannel: TextChannelIdentifier): Completable
+	fun unlinkVoiceChannelFromTextChannel(voiceChannel: VoiceChannelIdentifier): Completable
 }

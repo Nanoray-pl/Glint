@@ -3,4 +3,4 @@ local.properties
 /**/out
 /**/build
 .idea
-twite.db.*
+/test/**

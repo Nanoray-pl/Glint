@@ -1,5 +1,7 @@
 dependencies {
-	api project(':core')
+	compileOnly "org.jetbrains.kotlin:kotlin-stdlib-jdk8:$kotlinVersion"
+	compileOnly "org.jetbrains.kotlin:kotlin-reflect:$kotlinVersion"
+	compileOnly project(':core')
 }
 
 test {

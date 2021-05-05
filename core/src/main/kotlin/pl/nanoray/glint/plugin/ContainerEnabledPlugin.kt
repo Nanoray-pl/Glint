@@ -1,17 +1,13 @@
-package pl.nanoray.glint
+package pl.nanoray.glint.plugin
 
 import pl.shockah.unikorn.dependency.*
 import pl.shockah.unikorn.plugin.Plugin
-import pl.shockah.unikorn.plugin.PluginInfo
-import pl.shockah.unikorn.plugin.PluginManager
 import kotlin.reflect.KClass
 import kotlin.reflect.KType
 
 abstract class ContainerEnabledPlugin(
-		manager: PluginManager,
-		info: PluginInfo,
 		@PublishedApi internal val container: Container
-): Plugin(manager, info) {
+): Plugin {
 	@PublishedApi internal val componentKeys = mutableSetOf<ComponentId<*, *>>()
 	private val pluginComponentId: ComponentId<*, *>
 

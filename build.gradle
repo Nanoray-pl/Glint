@@ -1,21 +1,25 @@
 buildscript {
 	ext.kotlinVersion = '1.4.32'
-	ext.unikornVersion = '7acdcd6f54e152e96d0ac9dfb9c19cdd5d66538a'
+	ext.unikornVersion = '533239ee584c104b745e310b8e248cf7017b8ea0'
 
 	repositories {
-		jcenter()
+		mavenCentral()
+		maven {
+			url "https://plugins.gradle.org/m2/"
+		}
 	}
 
 	dependencies {
 		classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlinVersion"
+		classpath 'gradle.plugin.com.github.jengelman.gradle.plugins:shadow:7.0.0'
 	}
 }
 
 subprojects {
 	apply plugin: 'kotlin'
+	apply plugin: 'com.github.johnrengelman.shadow'
 
 	repositories {
-		jcenter()
 		mavenCentral()
 		maven {
 			name 'm2-dv8tion'
@@ -29,7 +33,9 @@ subprojects {
 			javaParameters = true
 			freeCompilerArgs = [
 					'-Xuse-experimental=kotlin.ExperimentalUnsignedTypes',
+					'-Xopt-in=kotlin.ExperimentalStdlibApi',
 					'-Xopt-in=kotlin.time.ExperimentalTime',
+					'-Xopt-in=kotlin.io.path.ExperimentalPathApi',
 					'-XXLanguage:+InlineClasses'
 			]
 		}
@@ -42,13 +48,7 @@ subprojects {
 	}
 
 	dependencies {
-		implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8:$kotlinVersion"
-		implementation "org.jetbrains.kotlin:kotlin-reflect:$kotlinVersion"
 		testImplementation 'org.junit.jupiter:junit-jupiter-api:5.3.2'
 		testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.3.2'
-
-		api "com.github.Shockah.Unikorn:core:$unikornVersion"
-		api "com.github.Shockah.Unikorn:plugin:$unikornVersion"
-		api "com.github.Shockah.Unikorn:dependency:$unikornVersion"
 	}
 }

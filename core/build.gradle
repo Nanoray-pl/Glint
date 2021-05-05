@@ -1,13 +1,21 @@
 ext.hopliteVersion = '1.4.0'
 
 dependencies {
+	implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8:$kotlinVersion"
+	implementation "org.jetbrains.kotlin:kotlin-reflect:$kotlinVersion"
+	testImplementation 'org.junit.jupiter:junit-jupiter-api:5.3.2'
+	testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.3.2'
+
 	api "com.github.Shockah.Unikorn:core:$unikornVersion"
 	api "com.github.Shockah.Unikorn:plugin:$unikornVersion"
 	api "com.github.Shockah.Unikorn:dependency:$unikornVersion"
 
 //	api 'net.dv8tion:JDA:4.2.1_261'
+	implementation 'com.github.marschall:path-classloader:0.1.0'
+	implementation 'com.beust:klaxon:5.5'
 	api 'com.github.dv8fromtheworld:jda:5951675256d2418ed50fdfebc540438c4f6d001e'
 	api 'com.xenomachina:kotlin-argparser:2.0.7'
+	api 'io.reactivex.rxjava3:rxkotlin:3.0.1'
 
 	api "com.sksamuel.hoplite:hoplite-core:$hopliteVersion"
 	runtimeOnly "com.sksamuel.hoplite:hoplite-json:$hopliteVersion"
@@ -22,5 +30,13 @@ test {
 
 	testLogging {
 		events "passed", "skipped", "failed"
+	}
+}
+
+jar {
+	manifest {
+		attributes(
+				'Main-Class': 'pl.nanoray.glint.Glint'
+		)
 	}
 }

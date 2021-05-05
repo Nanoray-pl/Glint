@@ -3,7 +3,9 @@ package pl.nanoray.glint.jdaextensions
 import net.dv8tion.jda.api.entities.*
 import net.dv8tion.jda.api.interactions.commands.Command
 
-inline class SnowflakeIdentifier<out SnowflakeType: ISnowflake>(val value: Long)
+data class SnowflakeIdentifier<out SnowflakeType: ISnowflake>(
+		val value: Long
+)
 
 val <T: ISnowflake> T.identifier: SnowflakeIdentifier<T>
 	get() = SnowflakeIdentifier(idLong)
