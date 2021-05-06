@@ -2,7 +2,8 @@ package pl.nanoray.glint.ranking
 
 import pl.nanoray.glint.jdaextensions.UserIdentifier
 
-inline class RankingType(val value: String)
+@JvmInline
+value class RankingType(val value: String)
 
 interface RankingProvider<Value: Comparable<Value>> {
 	val rankingType: RankingType

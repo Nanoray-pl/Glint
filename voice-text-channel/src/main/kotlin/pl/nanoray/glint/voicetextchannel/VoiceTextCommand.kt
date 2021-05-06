@@ -1,24 +1,21 @@
-package pl.nanoray.glint.voicetextchannel.command
+package pl.nanoray.glint.voicetextchannel
 
 import net.dv8tion.jda.api.entities.GuildChannel
 import net.dv8tion.jda.api.entities.TextChannel
 import net.dv8tion.jda.api.entities.VoiceChannel
 import net.dv8tion.jda.api.events.interaction.SlashCommandEvent
 import pl.nanoray.glint.DurationParser
+import pl.nanoray.glint.command.Command
+import pl.nanoray.glint.command.CommandOption
 import pl.nanoray.glint.jdaextensions.TextChannelIdentifier
 import pl.nanoray.glint.jdaextensions.VoiceChannelIdentifier
 import pl.nanoray.glint.jdaextensions.asSingle
 import pl.nanoray.glint.jdaextensions.identifier
-import pl.nanoray.glint.logic.Command
-import pl.nanoray.glint.logic.CommandOption
 import pl.nanoray.glint.utilities.WithDefault
-import pl.nanoray.glint.voicetextchannel.ChannelMapping
-import pl.nanoray.glint.voicetextchannel.VoiceTextChannelDefaults
-import pl.nanoray.glint.voicetextchannel.WritableVoiceTextChannelManager
 import pl.shockah.unikorn.dependency.Resolver
 import pl.shockah.unikorn.dependency.inject
 
-class VoiceTextCommand(
+internal class VoiceTextCommand(
 		resolver: Resolver
 ): Command.WithSubcommands() {
 	override val name = "voicetext"

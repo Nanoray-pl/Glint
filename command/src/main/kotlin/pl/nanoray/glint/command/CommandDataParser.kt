@@ -1,4 +1,4 @@
-package pl.nanoray.glint.logic
+package pl.nanoray.glint.command
 
 import net.dv8tion.jda.api.JDA
 import net.dv8tion.jda.api.entities.*
@@ -84,6 +84,9 @@ class CommandDataParserImpl(
 	val jda: JDA by resolver.inject()
 
 	override fun <T: Any> getCommandOptionsData(optionsKlass: KClass<T>): CommandOptionsData {
+		if (optionsKlass == Unit::class)
+			return CommandOptionsData(emptyList())
+
 		l@ for (constructor in optionsKlass.constructors) {
 			val options = mutableListOf<OptionData>()
 			for (parameter in constructor.parameters) {
@@ -142,6 +145,10 @@ class CommandDataParserImpl(
 	}
 
 	override fun <T: Any> parseCommandOptions(event: SlashCommandEvent, optionsKlass: KClass<T>): T {
+		if (optionsKlass == Unit::class)
+			@Suppress("UNCHECKED_CAST")
+			return Unit as T
+
 		constructorLoop@ for (constructor in optionsKlass.constructors) {
 			val parameters = mutableMapOf<KParameter, Any?>()
 			parameterLoop@ for (parameter in constructor.parameters) {

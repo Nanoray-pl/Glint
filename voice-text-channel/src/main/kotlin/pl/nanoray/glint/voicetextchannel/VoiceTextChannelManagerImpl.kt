@@ -10,7 +10,7 @@ import java.util.concurrent.locks.ReentrantReadWriteLock
 import kotlin.concurrent.read
 import kotlin.concurrent.write
 
-class VoiceTextChannelManagerImpl(
+internal class VoiceTextChannelManagerImpl(
 		private val resolver: Resolver
 ): WritableVoiceTextChannelManager {
 	private val lock = ReentrantReadWriteLock()

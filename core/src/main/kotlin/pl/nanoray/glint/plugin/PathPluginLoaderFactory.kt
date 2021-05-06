@@ -7,7 +7,7 @@ import pl.shockah.unikorn.plugin.impl.ClassLoaderPluginLoader
 import java.nio.file.FileSystems
 
 class PathPluginLoaderFactory: PluginLoaderFactory<PathPluginInfo> {
-	override fun createPluginLoader(pluginInfos: Set<PathPluginInfo>): PluginLoader<PathPluginInfo> {
+	override fun createPluginLoader(pluginInfos: Collection<PathPluginInfo>): PluginLoader<PathPluginInfo> {
 		var currentClassLoader = Thread.currentThread().contextClassLoader
 		for (pluginInfo in pluginInfos) {
 			val fileSystem = FileSystems.newFileSystem(pluginInfo.jarPath, null)

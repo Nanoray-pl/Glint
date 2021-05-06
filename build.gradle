@@ -1,6 +1,6 @@
 buildscript {
-	ext.kotlinVersion = '1.4.32'
-	ext.unikornVersion = '533239ee584c104b745e310b8e248cf7017b8ea0'
+	ext.kotlinVersion = '1.5.0'
+	ext.unikornVersion = '32f873d95fe9e63c79eafe0df8d1770072040ea2'
 
 	repositories {
 		mavenCentral()
@@ -32,11 +32,9 @@ subprojects {
 		kotlinOptions {
 			javaParameters = true
 			freeCompilerArgs = [
-					'-Xuse-experimental=kotlin.ExperimentalUnsignedTypes',
 					'-Xopt-in=kotlin.ExperimentalStdlibApi',
 					'-Xopt-in=kotlin.time.ExperimentalTime',
-					'-Xopt-in=kotlin.io.path.ExperimentalPathApi',
-					'-XXLanguage:+InlineClasses'
+					'-Xopt-in=kotlin.io.path.ExperimentalPathApi'
 			]
 		}
 	}

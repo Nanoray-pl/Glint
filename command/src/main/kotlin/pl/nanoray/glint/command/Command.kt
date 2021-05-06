@@ -1,4 +1,4 @@
-package pl.nanoray.glint.logic
+package pl.nanoray.glint.command
 
 import net.dv8tion.jda.api.events.interaction.SlashCommandEvent
 import kotlin.reflect.KClass
@@ -8,6 +8,10 @@ sealed class Command {
 	abstract val description: String
 
 	abstract fun getCommandMatchingPath(name: String, subcommandGroup: String?, subcommandName: String?): Simple<*>?
+
+	fun getCommandMatchingPath(event: SlashCommandEvent): Simple<*>? {
+		return getCommandMatchingPath(event.name, event.subcommandGroup, event.subcommandName)
+	}
 
 	abstract class Simple<Options: Any>(
 			val optionsKlass: KClass<Options>
@@ -39,8 +43,4 @@ sealed class Command {
 			return group.subcommands.firstOrNull { subcommandName.equals(it.name, true) }
 		}
 	}
-}
-
-fun Command.getCommandMatchingPath(event: SlashCommandEvent): Command.Simple<*>? {
-	return getCommandMatchingPath(event.name, event.subcommandGroup, event.subcommandName)
 }

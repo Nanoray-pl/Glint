@@ -3,8 +3,6 @@ package pl.nanoray.glint
 import com.xenomachina.argparser.ArgParser
 import net.dv8tion.jda.api.JDA
 import net.dv8tion.jda.api.JDABuilder
-import pl.nanoray.glint.logic.CommandDataParser
-import pl.nanoray.glint.logic.CommandDataParserImpl
 import pl.nanoray.glint.plugin.PathPluginInfoProvider
 import pl.nanoray.glint.plugin.PathPluginLoaderFactory
 import pl.shockah.unikorn.dependency.*
@@ -28,7 +26,7 @@ class Glint(
 	}
 
 	private val container by lazy { Container().apply { configure() } }
-	private val pluginManager: PluginManager by container.inject()
+	private val pluginManager: PluginManager.Dynamic.FullUnload.Reload by container.inject()
 
 	val resolver: Resolver
 		get() = container
@@ -50,8 +48,7 @@ class Glint(
 
 	private fun Container.configureBusinessLogic() {
 		register { JDABuilder.createDefault(it.resolve<CoreConfig>().token).build() }
-		register<CommandDataParser> { CommandDataParserImpl(it) }
-		register<PluginManager> {
+		register<PluginManager.Dynamic.FullUnload.Reload> {
 			SerialPluginManager(
 					infoProvider = PathPluginInfoProvider(arguments.pluginPath),
 					loaderFactory = PathPluginLoaderFactory(),

@@ -8,7 +8,7 @@ import java.util.concurrent.CompletableFuture
 import java.util.concurrent.locks.ReentrantLock
 import kotlin.concurrent.withLock
 
-fun <T> RestAction<T>.asSingle(): Single<T> {
+fun <T: Any> RestAction<T>.asSingle(): Single<T> {
 	val lock = ReentrantLock()
 	val futureRef = Ref<CompletableFuture<T>?>(null)
 	return Single.defer {
@@ -25,6 +25,24 @@ fun <T> RestAction<T>.asSingle(): Single<T> {
 	}
 }
 
+fun RestAction<Void>.asCompletable(): Completable {
+	val lock = ReentrantLock()
+	val futureRef = Ref<CompletableFuture<Void>?>(null)
+	return Completable.defer {
+		val future: CompletableFuture<Void>
+		lock.withLock {
+			future = submit()
+			futureRef.value = future
+		}
+		return@defer Completable.fromFuture(future)
+	}.doFinally {
+		lock.withLock {
+			futureRef.value?.cancel(true)
+		}
+	}
+}
+
+@JvmName("asCompletableUnit")
 fun RestAction<Unit>.asCompletable(): Completable {
 	val lock = ReentrantLock()
 	val futureRef = Ref<CompletableFuture<Unit>?>(null)
