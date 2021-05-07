@@ -13,6 +13,14 @@ data class MessageCommandNameAndArgumentLine(
 )
 
 interface MessageCommandParser {
+	class MissingRequiredOptionException(
+			val optionName: String
+	): Exception("Missing required option `$optionName`.")
+
+	class UnhandledInputException(
+			val input: String
+	): Exception("Unhandled command input: `$input`.")
+
 	fun registerOptionParser(optionParser: MessageCommandOptionParser)
 	fun unregisterOptionParser(optionParser: MessageCommandOptionParser)
 
@@ -116,15 +124,19 @@ class MessageCommandParserImpl(
 	}
 
 	override fun <T: Any> parseMessageCommandOptions(message: Message, argumentLine: String, optionsKlass: KClass<T>): T {
-		if (optionsKlass == Unit::class)
+		if (optionsKlass == Unit::class) {
+			if (argumentLine.isNotBlank())
+				throw MessageCommandParser.UnhandledInputException(argumentLine)
+
 			@Suppress("UNCHECKED_CAST")
 			return Unit as T
+		}
 
 		constructorLoop@ for (constructor in optionsKlass.constructors) {
 			val parameters = mutableMapOf<KParameter, Any?>()
 			var argumentLineLeft = argumentLine
 			parameterLoop@ for (parameter in constructor.parameters) {
-				var optionName: String? = null
+				var optionName = ""
 				var optionShorthand: String? = null
 				var isFlag = false
 				var shouldParseWhole = false
@@ -165,7 +177,7 @@ class MessageCommandParserImpl(
 					}
 				}
 				if (!foundAnnotation && !parameter.isOptional)
-					continue@parameterLoop
+					continue@constructorLoop
 
 				fun nextString(): String? {
 					if (argumentLineLeft.isEmpty()) {
@@ -204,24 +216,22 @@ class MessageCommandParserImpl(
 					}
 				}
 
-				if (optionName != null || optionShorthand != null) {
-					val oldArgumentLineLeft = argumentLineLeft
-					val string = nextString()
-					if (string == null) {
+				val oldArgumentLineLeft = argumentLineLeft
+				val string = nextString()
+				if (string == null) {
+					if (!parameter.isOptional)
+						throw MessageCommandParser.MissingRequiredOptionException(optionName)
+					argumentLineLeft = oldArgumentLineLeft
+				} else {
+					var matched = false
+					if (!matched && string == "--$optionName")
+						matched = true
+					if (!matched && optionShorthand != null && string == "-$optionShorthand")
+						matched = true
+					if (!matched) {
 						if (!parameter.isOptional)
-							continue@constructorLoop
+							throw MessageCommandParser.MissingRequiredOptionException(optionName)
 						argumentLineLeft = oldArgumentLineLeft
-					} else {
-						var matched = false
-						if (!matched && optionName != null && string == "--$optionName")
-							matched = true
-						if (!matched && optionShorthand != null && string == "-$optionShorthand")
-							matched = true
-						if (!matched) {
-							if (!parameter.isOptional)
-								continue@constructorLoop
-							argumentLineLeft = oldArgumentLineLeft
-						}
 					}
 				}
 
@@ -234,6 +244,8 @@ class MessageCommandParserImpl(
 				val parsedOption = parseMessageCommandOption(message, parameter, textOption) ?: continue@constructorLoop
 				parameters[parameter] = parsedOption
 			}
+			if (argumentLineLeft.isNotBlank())
+				throw MessageCommandParser.UnhandledInputException(argumentLineLeft)
 			try {
 				return constructor.callBy(parameters)
 			} catch (_: Exception) { }

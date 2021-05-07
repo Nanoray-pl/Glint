@@ -15,6 +15,13 @@ internal class DiscordEventListener(
 	override fun onMessageReceived(event: MessageReceivedEvent) {
 		if (event.isWebhookMessage || event.author.isBot || event.author.isSystem)
 			return
-		messageCommandManager.handleMessageCommand(event.message)
+
+		try {
+			messageCommandManager.handleMessageCommand(event.message)
+		} catch (e: MessageCommandParser.MissingRequiredOptionException) {
+			event.message.reply("Missing required option `${e.optionName}`.").queue()
+		} catch (e: MessageCommandParser.UnhandledInputException) {
+			event.message.reply("Unhandled command input: `${e.input}`.").queue()
+		}
 	}
 }
