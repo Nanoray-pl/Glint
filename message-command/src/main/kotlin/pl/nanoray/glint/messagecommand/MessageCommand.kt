@@ -9,6 +9,7 @@ abstract class MessageCommand<Options: Any>(
 	abstract val name: String
 	abstract val description: String
 	open val additionalDescription: String? = null
+	open val subcommands: List<MessageCommand<*>> = emptyList()
 
 	abstract fun handleCommand(message: Message, options: Options)
 

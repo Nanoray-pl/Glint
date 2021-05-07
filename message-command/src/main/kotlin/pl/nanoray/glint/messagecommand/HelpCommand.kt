@@ -22,11 +22,32 @@ class HelpCommand(
 	private val commandManager: MessageCommandManager by resolver.inject()
 	private val commandParser: MessageCommandParser by resolver.inject()
 
+	private val whitespaceRegex = Regex("\\s+")
+
 	override fun handleCommand(message: Message, options: Options) {
 		if (options.commandName == null)
 			handleListCommand(message)
 		else
 			handleInfoCommand(message, options.commandName)
+	}
+
+	private fun EmbedBuilder.addCommandInfoFields(commandChain: List<MessageCommand<*>>): EmbedBuilder {
+		fun getFlatCommands(commandChain: List<MessageCommand<*>> = emptyList(), command: MessageCommand<*>): List<List<MessageCommand<*>>> {
+			val newCommandChain = commandChain + command
+			val results = mutableListOf<List<MessageCommand<*>>>()
+			if (command.optionsKlass != Nothing::class)
+				results += newCommandChain
+			command.subcommands.forEach { results += getFlatCommands(newCommandChain, it) }
+			return results
+		}
+
+		val command = commandChain.last()
+		if (command.subcommands.isNotEmpty())
+			addField("Subcommands", command.subcommands.joinToString(", ") { "`${it.name}`" }, false)
+		addField("Usage", getFlatCommands(command = command).joinToString("\n") { "`${getCommandUsageString(commandChain.dropLast(1) + it)}`" }, false)
+		if (command.additionalDescription != null)
+			addField("Additional info", additionalDescription, false)
+		return this
 	}
 
 	private fun handleListCommand(message: Message) {
@@ -40,31 +61,46 @@ class HelpCommand(
 							groupedCommands.entries.joinToString("\n") { it.value.joinToString(", ") { "`${it.name}`" } },
 							false
 					)
-					addField("Usage", "`${getCommandUsageString(this@HelpCommand)}`", false)
-					addField("Additional info", additionalDescription, false)
+					addCommandInfoFields(listOf(this@HelpCommand))
 				}.build()
 		).queue()
 	}
 
 	private fun handleInfoCommand(message: Message, commandName: String) {
-		val command = commandManager.messageCommands.firstOrNull { it.name.equals(commandName, true) }
-		if (command == null) {
-			message.reply("Unknown command `$commandName`.").queue()
-			return
+		fun handle(nameChainLeft: List<String>, commandChain: List<MessageCommand<*>>): Boolean {
+			if (nameChainLeft.isEmpty()) {
+				message.reply(
+						EmbedBuilder().apply {
+							setTitle("Command `${commandChain.joinToString(" ") { it.name }}`")
+							addCommandInfoFields(commandChain)
+						}.build()
+				).queue()
+				return true
+			} else {
+				val command = commandChain.last()
+				val nextName = nameChainLeft.first()
+				for (subcommand in command.subcommands) {
+					if (subcommand.name.equals(nextName, true))
+						return handle(nameChainLeft.drop(1), commandChain + subcommand)
+					else
+						return false
+				}
+				return false
+			}
 		}
-		message.reply(
-				EmbedBuilder().apply {
-					setTitle("Command `${command.name}`")
-					addField("Usage", "`${getCommandUsageString(command)}`", false)
-					if (command.additionalDescription != null)
-						addField("Additional info", additionalDescription, false)
-				}.build()
-		).queue()
+
+		val nameSplit = commandName.split(whitespaceRegex)
+		for (command in commandManager.messageCommands) {
+			if (handle(nameSplit.drop(1), listOf(command)))
+				return
+		}
+		message.reply("Unknown command `${nameSplit.joinToString(" ")}`.").queue()
 	}
 
-	private fun getCommandUsageString(command: MessageCommand<*>): String {
+	private fun getCommandUsageString(commandChain: List<MessageCommand<*>>): String {
+		val command = commandChain.last()
 		val result = StringBuilder()
-		result.append(command.name)
+		result.append(commandChain.joinToString(" ") { it.name })
 		for (option in commandParser.parseCommandHelpEntryOptions(command.optionsKlass)) {
 			when (option.type) {
 				CommandHelpEntry.Option.Type.Flag -> {

@@ -50,17 +50,27 @@ class MessageCommandManagerImpl(
 	override fun handleMessageCommand(message: Message): Boolean {
 		lock.withLock {
 			for (argumentLineParser in argumentLineParsers) {
-				val argumentLine = argumentLineParser(message) ?: continue
-				val commandNameAndArgumentLine = commandParser.parseMessageCommandNameAndArgumentLine(message, argumentLine)
-				for (command in messageCommandStorage) {
+				fun handleCommand(command: MessageCommand<*>, rawArgumentLine: String): Boolean {
+					val commandNameAndArgumentLine = commandParser.parseMessageCommandNameAndArgumentLine(message, rawArgumentLine)
+					for (subcommand in command.subcommands) {
+						if (handleCommand(subcommand, commandNameAndArgumentLine.argumentLine))
+							return true
+					}
+
 					if (!command.name.equals(commandNameAndArgumentLine.commandName, true))
-						continue
+						return false
 					val options = commandParser.parseMessageCommandOptions(message, commandNameAndArgumentLine.argumentLine, command.optionsKlass)
 
 					@Suppress("UNCHECKED_CAST")
-					val anyTypedCommand = command as? MessageCommand<Any> ?: continue
+					val anyTypedCommand = command as? MessageCommand<Any> ?: return false
 					anyTypedCommand.handleCommand(message, options)
-					return@withLock true
+					return true
+				}
+
+				val rawArgumentLine = argumentLineParser(message) ?: continue
+				for (command in messageCommandStorage) {
+					if (handleCommand(command, rawArgumentLine))
+						return@withLock true
 				}
 			}
 		}
