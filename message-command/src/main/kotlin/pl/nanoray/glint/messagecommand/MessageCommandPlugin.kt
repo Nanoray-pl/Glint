@@ -20,6 +20,7 @@ class MessageCommandPlugin(
 	private val eventListener by lazy { DiscordEventListener(container) }
 
 	private val helpCommand = HelpCommand(resolver)
+	private val pluginsCommand = PluginCommand(resolver)
 
 	init {
 		pluginContainer.register { it.resolve<ConfigManager>().getConfig(Config::class) ?: throw IllegalArgumentException("Cannot parse Config.") }
@@ -33,11 +34,13 @@ class MessageCommandPlugin(
 
 		jda.addEventListener(eventListener)
 		commandManager.registerMessageCommand(helpCommand)
+		commandManager.registerMessageCommand(pluginsCommand)
 	}
 
 	override fun onUnload() {
 		jda.removeEventListener(eventListener)
 		commandManager.unregisterMessageCommand(helpCommand)
+		commandManager.unregisterMessageCommand(pluginsCommand)
 		super.onUnload()
 	}
 }

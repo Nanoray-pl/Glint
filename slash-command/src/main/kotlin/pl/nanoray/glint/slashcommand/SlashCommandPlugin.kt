@@ -9,11 +9,10 @@ import pl.shockah.unikorn.plugin.PluginInfo
 
 class SlashCommandPlugin(
 		container: Container
-): ContainerEnabledPlugin(container), SlashCommandProvider {
+): ContainerEnabledPlugin(container) {
 	private val jda: JDA by resolver.inject()
 	private val slashCommandManger: SlashCommandManager by resolver.inject()
 
-	override val globalSlashCommands: Set<SlashCommand> = setOf(PluginsSlashCommand(resolver))
 	private val eventListener by lazy { DiscordEventListener(container) }
 
 	init {
@@ -21,12 +20,10 @@ class SlashCommandPlugin(
 		register<SlashCommandManager> { SlashCommandManagerImpl(it, true) }
 
 		jda.addEventListener(eventListener)
-		slashCommandManger.registerSlashCommandProvider(this)
 	}
 
 	override fun onUnload() {
 		jda.removeEventListener(eventListener)
-		slashCommandManger.unregisterSlashCommandProvider(this)
 		super.onUnload()
 	}
 

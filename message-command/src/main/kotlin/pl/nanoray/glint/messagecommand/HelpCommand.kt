@@ -16,7 +16,7 @@ class HelpCommand(
 	""".trimIndent()
 
 	data class Options(
-			@Option.Positional("command", "The command to show information about.") val commandName: String? = null
+			@Option.Final("command", "The command to show information about.") val commandName: String? = null
 	)
 
 	private val commandManager: MessageCommandManager by resolver.inject()
@@ -51,9 +51,7 @@ class HelpCommand(
 	}
 
 	private fun handleListCommand(message: Message) {
-		val commands = commandManager.messageCommands
-		val groupedCommands = commands.groupBy { it.name.first().lowercase() }
-
+		val groupedCommands = commandManager.messageCommands.sortedBy { it.name.lowercase() }.groupBy { it.name.first().lowercase() }
 		message.reply(
 				EmbedBuilder().apply {
 					addField(
@@ -72,6 +70,7 @@ class HelpCommand(
 				message.reply(
 						EmbedBuilder().apply {
 							setTitle("Command `${commandChain.joinToString(" ") { it.name }}`")
+							appendDescription(commandChain.last().description)
 							addCommandInfoFields(commandChain)
 						}.build()
 				).queue()
@@ -90,8 +89,9 @@ class HelpCommand(
 		}
 
 		val nameSplit = commandName.split(whitespaceRegex)
+		val firstName = nameSplit.first()
 		for (command in commandManager.messageCommands) {
-			if (handle(nameSplit.drop(1), listOf(command)))
+			if (command.name.equals(firstName, true) && handle(nameSplit.drop(1), listOf(command)))
 				return
 		}
 		message.reply("Unknown command `${nameSplit.joinToString(" ")}`.").queue()

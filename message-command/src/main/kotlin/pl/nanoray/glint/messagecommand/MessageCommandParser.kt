@@ -168,12 +168,12 @@ class MessageCommandParserImpl(
 					continue@parameterLoop
 
 				fun nextString(): String? {
-					if (shouldParseWhole) {
+					if (argumentLineLeft.isEmpty()) {
+						return null
+					} else if (shouldParseWhole) {
 						val result = argumentLineLeft
 						argumentLineLeft = ""
 						return result
-					} else if (argumentLineLeft.isEmpty()) {
-						return null
 					} else {
 						if (argumentLineLeft[0] == '"' && argumentLineLeft.length >= 2 && argumentLineLeft.count { it == '"' } >= 2) {
 							if (argumentLineLeft[1] == '"') {
