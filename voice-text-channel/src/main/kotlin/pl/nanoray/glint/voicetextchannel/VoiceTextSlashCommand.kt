@@ -5,33 +5,32 @@ import net.dv8tion.jda.api.entities.TextChannel
 import net.dv8tion.jda.api.entities.VoiceChannel
 import net.dv8tion.jda.api.events.interaction.SlashCommandEvent
 import pl.nanoray.glint.DurationParser
-import pl.nanoray.glint.command.Command
-import pl.nanoray.glint.command.CommandOption
 import pl.nanoray.glint.jdaextensions.TextChannelIdentifier
 import pl.nanoray.glint.jdaextensions.VoiceChannelIdentifier
 import pl.nanoray.glint.jdaextensions.asSingle
 import pl.nanoray.glint.jdaextensions.identifier
+import pl.nanoray.glint.slashcommand.SlashCommand
 import pl.nanoray.glint.utilities.WithDefault
 import pl.shockah.unikorn.dependency.Resolver
 import pl.shockah.unikorn.dependency.inject
 
-internal class VoiceTextCommand(
+internal class VoiceTextSlashCommand(
 		resolver: Resolver
-): Command.WithSubcommands() {
+): SlashCommand.WithSubcommands() {
 	override val name = "voicetext"
 	override val description = "[Administrator] Configure a text channel linked to a voice channel."
 	override val subcommands = listOf(LinkCommand(resolver), UnlinkCommand(resolver))
 
 	class LinkCommand(
 			resolver: Resolver
-	): Command.Simple<LinkCommand.Options>(Options::class) {
+	): SlashCommand.Simple<LinkCommand.Options>(Options::class) {
 		override val name = "link"
 		override val description = "[Administrator] Link a text channel to a voice channel."
 
 		data class Options(
-				@CommandOption("text-channel", "Text channel to link.") val textChannel: TextChannelIdentifier,
-				@CommandOption("voice-channel", "Voice channel to link to.") val voiceChannel: VoiceChannelIdentifier? = null,
-				@CommandOption("history-duration", "Duration to keep the messages for.") val historyDuration: String? = null
+				@Option("text-channel", "Text channel to link.") val textChannel: TextChannelIdentifier,
+				@Option("voice-channel", "Voice channel to link to.") val voiceChannel: VoiceChannelIdentifier? = null,
+				@Option("history-duration", "Duration to keep the messages for.") val historyDuration: String? = null
 		)
 
 		private val durationParser: DurationParser by resolver.inject()
@@ -64,12 +63,12 @@ internal class VoiceTextCommand(
 
 	class UnlinkCommand(
 			resolver: Resolver
-	): Command.Simple<UnlinkCommand.Options>(Options::class) {
+	): SlashCommand.Simple<UnlinkCommand.Options>(Options::class) {
 		override val name = "unlink"
 		override val description = "[Administrator] Unlink a text channel from a voice channel."
 
 		data class Options(
-				@CommandOption("channel", "Text/voice channel to unlink.") val channel: GuildChannel? = null
+				@Option("channel", "Text/voice channel to unlink.") val channel: GuildChannel? = null
 		)
 
 		private val voiceTextChannelManager: WritableVoiceTextChannelManager by resolver.inject()

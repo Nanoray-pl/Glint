@@ -6,11 +6,12 @@ import net.dv8tion.jda.api.Permission
 import pl.nanoray.glint.jdaextensions.*
 import pl.shockah.unikorn.dependency.Resolver
 import pl.shockah.unikorn.dependency.inject
+import javax.annotation.CheckReturnValue
 
 internal interface DiscordWorker {
-	fun grantAccess(mapping: ChannelMapping, guild: GuildIdentifier, member: UserIdentifier): Completable
-	fun denyAccess(mapping: ChannelMapping, guild: GuildIdentifier, member: UserIdentifier): Completable
-	fun updateAccess(channelLeft: VoiceChannelIdentifier?, channelJoined: VoiceChannelIdentifier?, guild: GuildIdentifier, member: UserIdentifier): Completable
+	@CheckReturnValue fun grantAccess(mapping: ChannelMapping, guild: GuildIdentifier, member: UserIdentifier): Completable
+	@CheckReturnValue fun denyAccess(mapping: ChannelMapping, guild: GuildIdentifier, member: UserIdentifier): Completable
+	@CheckReturnValue fun updateAccess(channelLeft: VoiceChannelIdentifier?, channelJoined: VoiceChannelIdentifier?, guild: GuildIdentifier, member: UserIdentifier): Completable
 }
 
 internal class DiscordWorkerImpl(
@@ -19,6 +20,7 @@ internal class DiscordWorkerImpl(
 	private val jda: JDA by resolver.inject()
 	private val voiceTextChannelManager: VoiceTextChannelManager by resolver.inject()
 
+	@CheckReturnValue
 	override fun grantAccess(mapping: ChannelMapping, guild: GuildIdentifier, member: UserIdentifier): Completable {
 		val textChannel = jda.getTextChannel(mapping.textChannel) ?: throw IllegalArgumentException("Missing text channel ${mapping.textChannel} mapped to voice channel ${mapping.voiceChannel}.")
 		val guildEntity = requireNotNull(jda.getGuild(guild))
@@ -29,6 +31,7 @@ internal class DiscordWorkerImpl(
 				.ignoreElement()
 	}
 
+	@CheckReturnValue
 	override fun denyAccess(mapping: ChannelMapping, guild: GuildIdentifier, member: UserIdentifier): Completable {
 		val textChannel = jda.getTextChannel(mapping.textChannel) ?: throw IllegalArgumentException("Missing text channel ${mapping.textChannel} mapped to voice channel ${mapping.voiceChannel}.")
 		val guildEntity = requireNotNull(jda.getGuild(guild))
@@ -39,6 +42,7 @@ internal class DiscordWorkerImpl(
 				.ignoreElement()
 	}
 
+	@CheckReturnValue
 	override fun updateAccess(channelLeft: VoiceChannelIdentifier?, channelJoined: VoiceChannelIdentifier?, guild: GuildIdentifier, member: UserIdentifier): Completable {
 		require(channelLeft != null || channelJoined != null)
 		val completables = mutableListOf<Completable>()

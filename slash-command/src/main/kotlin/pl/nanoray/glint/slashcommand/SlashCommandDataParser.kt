@@ -1,4 +1,4 @@
-package pl.nanoray.glint.command
+package pl.nanoray.glint.slashcommand
 
 import net.dv8tion.jda.api.JDA
 import net.dv8tion.jda.api.entities.*
@@ -9,6 +9,7 @@ import net.dv8tion.jda.api.interactions.commands.build.OptionData
 import net.dv8tion.jda.api.interactions.commands.build.SubcommandData
 import net.dv8tion.jda.api.interactions.commands.build.SubcommandGroupData
 import pl.nanoray.glint.jdaextensions.*
+import pl.nanoray.glint.utilities.createNullabilityTypeVariants
 import pl.shockah.unikorn.dependency.Resolver
 import pl.shockah.unikorn.dependency.inject
 import java.math.BigInteger
@@ -19,11 +20,11 @@ import kotlin.reflect.full.createType
 import kotlin.reflect.full.findAnnotation
 import kotlin.reflect.typeOf
 
-data class CommandOptionsData(
+data class SlashCommandOptionsData(
 		val options: List<OptionData>
 ) {
-	operator fun plus(option: OptionData): CommandOptionsData {
-		return CommandOptionsData(options + option)
+	operator fun plus(option: OptionData): SlashCommandOptionsData {
+		return SlashCommandOptionsData(options + option)
 	}
 
 	fun asCommandData(name: String, description: String): CommandData {
@@ -39,24 +40,24 @@ data class CommandOptionsData(
 	}
 }
 
-interface CommandDataParser {
-	fun <T: Any> getCommandOptionsData(optionsKlass: KClass<T>): CommandOptionsData
-	fun <T: Any> parseCommandOptions(event: SlashCommandEvent, optionsKlass: KClass<T>): T
+interface SlashCommandDataParser {
+	fun <T: Any> getSlashCommandOptionsData(optionsKlass: KClass<T>): SlashCommandOptionsData
+	fun <T: Any> parseSlashCommandOptions(event: SlashCommandEvent, optionsKlass: KClass<T>): T
 }
 
-fun CommandDataParser.getCommandData(command: Command): CommandData {
+fun SlashCommandDataParser.getSlashCommandData(command: SlashCommand): CommandData {
 	when (command) {
-		is Command.Simple<*> -> return getCommandOptionsData(command.optionsKlass).asCommandData(command.name, command.description)
-		is Command.WithSubcommands -> {
+		is SlashCommand.Simple<*> -> return getSlashCommandOptionsData(command.optionsKlass).asCommandData(command.name, command.description)
+		is SlashCommand.WithSubcommands -> {
 			var commandData = CommandData(command.name, command.description)
-			command.subcommands.forEach { commandData = commandData.addSubcommand(getCommandOptionsData(it.optionsKlass).asSubcommandData(it.name, it.description)) }
+			command.subcommands.forEach { commandData = commandData.addSubcommand(getSlashCommandOptionsData(it.optionsKlass).asSubcommandData(it.name, it.description)) }
 			return commandData
 		}
-		is Command.WithSubcommandGroups -> {
+		is SlashCommand.WithSubcommandGroups -> {
 			var commandData = CommandData(command.name, command.description)
 			command.groups.forEach {
 				var subcommandGroupData = SubcommandGroupData(it.name, it.description)
-				it.subcommands.forEach { subcommandGroupData = subcommandGroupData.addSubcommand(getCommandOptionsData(it.optionsKlass).asSubcommandData(it.name, it.description)) }
+				it.subcommands.forEach { subcommandGroupData = subcommandGroupData.addSubcommand(getSlashCommandOptionsData(it.optionsKlass).asSubcommandData(it.name, it.description)) }
 				commandData = commandData.addSubcommandGroup(subcommandGroupData)
 			}
 			return commandData
@@ -64,33 +65,19 @@ fun CommandDataParser.getCommandData(command: Command): CommandData {
 	}
 }
 
-@Retention(AnnotationRetention.RUNTIME)
-@Target(AnnotationTarget.VALUE_PARAMETER)
-annotation class CommandOption(
-		val name: String = "",
-		val description: String
-)
-
-@Retention(AnnotationRetention.RUNTIME)
-@Target(AnnotationTarget.PROPERTY)
-annotation class CommandOptionChoice(
-		val name: String = "",
-		val value: String = ""
-)
-
-class CommandDataParserImpl(
+class SlashCommandDataParserImpl(
 		resolver: Resolver
-): CommandDataParser {
+): SlashCommandDataParser {
 	val jda: JDA by resolver.inject()
 
-	override fun <T: Any> getCommandOptionsData(optionsKlass: KClass<T>): CommandOptionsData {
+	override fun <T: Any> getSlashCommandOptionsData(optionsKlass: KClass<T>): SlashCommandOptionsData {
 		if (optionsKlass == Unit::class)
-			return CommandOptionsData(emptyList())
+			return SlashCommandOptionsData(emptyList())
 
 		l@ for (constructor in optionsKlass.constructors) {
 			val options = mutableListOf<OptionData>()
 			for (parameter in constructor.parameters) {
-				val optionAnnotation = parameter.findAnnotation<CommandOption>() ?: continue
+				val optionAnnotation = parameter.findAnnotation<SlashCommand.Option>() ?: continue
 				val optionName = optionAnnotation.name.takeIf { it.isNotBlank() } ?: parameter.name ?: continue@l
 				val optionDescription = optionAnnotation.description
 				val isRequired = !parameter.type.isMarkedNullable
@@ -123,7 +110,7 @@ class CommandDataParserImpl(
 					parameter.type.javaClass.isEnum -> {
 						val choices = mutableListOf<Pair<String, String>>()
 						for (enumValue in parameter.type.javaClass.enumConstants) {
-							val choiceAnnotation = enumValue.findAnnotation<CommandOptionChoice>() ?: continue
+							val choiceAnnotation = enumValue.findAnnotation<SlashCommand.Option.Choice>() ?: continue
 							val choiceName = choiceAnnotation.name.takeIf { it.isNotBlank() } ?: (enumValue as? Enum<*>)?.name ?: continue
 							val choiceValue = choiceAnnotation.value.takeIf { it.isNotBlank() } ?: (enumValue as? Enum<*>)?.name ?: continue
 							choices.add(choiceName to choiceValue)
@@ -139,12 +126,12 @@ class CommandDataParserImpl(
 					}
 				}
 			}
-			return CommandOptionsData(options)
+			return SlashCommandOptionsData(options)
 		}
-		throw IllegalArgumentException("$optionsKlass cannot be used as `Options` for `Command`.")
+		throw IllegalArgumentException("$optionsKlass cannot be used as `Options` for `SlashCommand`.")
 	}
 
-	override fun <T: Any> parseCommandOptions(event: SlashCommandEvent, optionsKlass: KClass<T>): T {
+	override fun <T: Any> parseSlashCommandOptions(event: SlashCommandEvent, optionsKlass: KClass<T>): T {
 		if (optionsKlass == Unit::class)
 			@Suppress("UNCHECKED_CAST")
 			return Unit as T
@@ -152,7 +139,7 @@ class CommandDataParserImpl(
 		constructorLoop@ for (constructor in optionsKlass.constructors) {
 			val parameters = mutableMapOf<KParameter, Any?>()
 			parameterLoop@ for (parameter in constructor.parameters) {
-				val optionAnnotation = parameter.findAnnotation<CommandOption>() ?: continue
+				val optionAnnotation = parameter.findAnnotation<SlashCommand.Option>() ?: continue
 				val optionName = optionAnnotation.name.takeIf { it.isNotBlank() } ?: parameter.name ?: continue@constructorLoop
 
 				val optionData = event.getOption(optionName)
@@ -216,7 +203,7 @@ class CommandDataParserImpl(
 					parameter.type.javaClass.isEnum -> {
 						val chosenValue = optionData.asString
 						for (enumValue in parameter.type.javaClass.enumConstants) {
-							val choiceAnnotation = enumValue.findAnnotation<CommandOptionChoice>() ?: continue
+							val choiceAnnotation = enumValue.findAnnotation<SlashCommand.Option.Choice>() ?: continue
 							val choiceValue = choiceAnnotation.value.takeIf { it.isNotBlank() } ?: (enumValue as? Enum<*>)?.name ?: continue
 							if (choiceValue == chosenValue) {
 								parameters[parameter] = enumValue
@@ -229,14 +216,6 @@ class CommandDataParserImpl(
 			}
 			return constructor.callBy(parameters)
 		}
-		throw IllegalArgumentException("$optionsKlass cannot be used as `Options` for `Command`.")
-	}
-
-	private inline fun <reified T: Any> createNullabilityTypeVariants(): Set<KType> {
-		val source = typeOf<T>()
-		return source.classifier?.let { setOf(
-				it.createType(source.arguments, false, source.annotations),
-				it.createType(source.arguments, true, source.annotations)
-		) } ?: emptySet()
+		throw IllegalArgumentException("$optionsKlass cannot be used as `Options` for `SlashCommand`.")
 	}
 }

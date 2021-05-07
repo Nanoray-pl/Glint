@@ -7,6 +7,7 @@ import pl.nanoray.glint.utilities.WithDefault
 import pl.shockah.unikorn.collection.removeFirst
 import pl.shockah.unikorn.dependency.Resolver
 import java.util.concurrent.locks.ReentrantReadWriteLock
+import javax.annotation.CheckReturnValue
 import kotlin.concurrent.read
 import kotlin.concurrent.write
 
@@ -37,6 +38,7 @@ internal class VoiceTextChannelManagerImpl(
 		return lock.read { mappings.firstOrNull { it.voiceChannel == textChannel } }
 	}
 
+	@CheckReturnValue
 	override fun linkTextChannelToVoiceChannel(
 			textChannel: TextChannelIdentifier,
 			voiceChannel: VoiceChannelIdentifier,
@@ -65,6 +67,7 @@ internal class VoiceTextChannelManagerImpl(
 		}
 	}
 
+	@CheckReturnValue
 	override fun unlinkTextChannelFromVoiceChannel(textChannel: TextChannelIdentifier): Completable {
 		return Completable.defer {
 			lock.write {
@@ -76,6 +79,7 @@ internal class VoiceTextChannelManagerImpl(
 		}
 	}
 
+	@CheckReturnValue
 	override fun unlinkVoiceChannelFromTextChannel(voiceChannel: VoiceChannelIdentifier): Completable {
 		return Completable.defer {
 			lock.write {

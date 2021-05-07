@@ -4,6 +4,7 @@ import io.reactivex.rxjava3.core.Completable
 import pl.nanoray.glint.jdaextensions.TextChannelIdentifier
 import pl.nanoray.glint.jdaextensions.VoiceChannelIdentifier
 import pl.nanoray.glint.utilities.WithDefault
+import javax.annotation.CheckReturnValue
 
 interface VoiceTextChannelManagerObserver {
 	fun onVoiceTextChannelMappingAdded(manager: VoiceTextChannelManager, mapping: ChannelMapping) { }
@@ -20,12 +21,12 @@ interface VoiceTextChannelManager {
 }
 
 interface WritableVoiceTextChannelManager: VoiceTextChannelManager {
-	fun linkTextChannelToVoiceChannel(
+	@CheckReturnValue fun linkTextChannelToVoiceChannel(
 			textChannel: TextChannelIdentifier,
 			voiceChannel: VoiceChannelIdentifier,
 			configuration: WithDefault<ChannelMapping.Configuration>
 	): Completable
 
-	fun unlinkTextChannelFromVoiceChannel(textChannel: TextChannelIdentifier): Completable
-	fun unlinkVoiceChannelFromTextChannel(voiceChannel: VoiceChannelIdentifier): Completable
+	@CheckReturnValue fun unlinkTextChannelFromVoiceChannel(textChannel: TextChannelIdentifier): Completable
+	@CheckReturnValue fun unlinkVoiceChannelFromTextChannel(voiceChannel: VoiceChannelIdentifier): Completable
 }

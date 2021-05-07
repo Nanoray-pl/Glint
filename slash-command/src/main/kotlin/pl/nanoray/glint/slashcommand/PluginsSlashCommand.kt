@@ -1,4 +1,4 @@
-package pl.nanoray.glint.command
+package pl.nanoray.glint.slashcommand
 
 import net.dv8tion.jda.api.EmbedBuilder
 import net.dv8tion.jda.api.events.interaction.SlashCommandEvent
@@ -6,16 +6,16 @@ import pl.shockah.unikorn.dependency.Resolver
 import pl.shockah.unikorn.dependency.inject
 import pl.shockah.unikorn.plugin.PluginManager
 
-internal class PluginsCommand(
+internal class PluginsSlashCommand(
 		resolver: Resolver
-): Command.WithSubcommands() {
+): SlashCommand.WithSubcommands() {
 	override val name = "plugin"
 	override val description = "[Bot Owner] Manage bot plugins."
-	override val subcommands = listOf(ListCommand(resolver), ReloadCommand(resolver))
+	override val subcommands = listOf(ListSlashCommand(resolver), ReloadSlashCommand(resolver))
 
-	class ListCommand(
+	class ListSlashCommand(
 			resolver: Resolver
-	): Command.Simple<Unit>(Unit::class) {
+	): SlashCommand.Simple<Unit>(Unit::class) {
 		override val name = "list"
 		override val description = "[Bot Owner] List the current plugins."
 
@@ -36,9 +36,9 @@ internal class PluginsCommand(
 		}
 	}
 
-	class ReloadCommand(
+	class ReloadSlashCommand(
 			resolver: Resolver
-	): Command.Simple<Unit>(Unit::class) {
+	): SlashCommand.Simple<Unit>(Unit::class) {
 		override val name = "reload"
 		override val description = "[Bot Owner] Reload the plugin list and all plugins."
 

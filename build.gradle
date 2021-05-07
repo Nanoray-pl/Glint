@@ -1,3 +1,7 @@
+import groovy.json.JsonSlurper
+import java.nio.file.Files
+import java.nio.file.StandardCopyOption
+
 buildscript {
 	ext.kotlinVersion = '1.5.0'
 	ext.unikornVersion = '32f873d95fe9e63c79eafe0df8d1770072040ea2'
@@ -12,6 +16,17 @@ buildscript {
 	dependencies {
 		classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlinVersion"
 		classpath 'gradle.plugin.com.github.jengelman.gradle.plugins:shadow:7.0.0'
+	}
+}
+
+project.subprojects.each {
+	def pluginJsonFile = new File(it.projectDir, "src/main/resources/plugin.json")
+	if (pluginJsonFile.exists()) {
+		def pluginJson = new JsonSlurper().parseText(pluginJsonFile.text)
+		it.ext.isPlugin = true
+		it.ext.pluginVersion = pluginJson.version ?: "1.0"
+	} else {
+		it.ext.isPlugin = false
 	}
 }
 
@@ -39,14 +54,31 @@ subprojects {
 		}
 	}
 
+	dependencies {
+		testImplementation 'org.junit.jupiter:junit-jupiter-api:5.3.2'
+		testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.3.2'
+	}
+
 	tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinCompile).all {
 		kotlinOptions {
 			jvmTarget = "1.8"
 		}
 	}
 
-	dependencies {
-		testImplementation 'org.junit.jupiter:junit-jupiter-api:5.3.2'
-		testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.3.2'
+	if (project.isPlugin) {
+		def fullName = path.substring(1)
+		def safeFullName = fullName.replace(":", ".")
+
+		task copyTestPlugin() {
+			group = 'build'
+			dependsOn 'shadowJar'
+
+			doLast {
+				def source = new File(buildDir, "libs/$project.name-all.jar")
+				def destination = new File(project(':core').projectDir.parentFile, "test/plugins/${safeFullName}-${project.pluginVersion}.jar")
+				destination.parentFile.mkdirs()
+				Files.copy(source.toPath(), destination.toPath(), StandardCopyOption.REPLACE_EXISTING)
+			}
+		}
 	}
 }
