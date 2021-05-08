@@ -2,6 +2,7 @@ package pl.nanoray.glint.messagecommand
 
 import net.dv8tion.jda.api.EmbedBuilder
 import net.dv8tion.jda.api.entities.Message
+import net.dv8tion.jda.api.entities.User
 import pl.shockah.unikorn.dependency.Resolver
 import pl.shockah.unikorn.dependency.inject
 
@@ -31,7 +32,7 @@ class HelpCommand(
 			handleInfoCommand(message, options.commandName)
 	}
 
-	private fun EmbedBuilder.addCommandInfoFields(commandChain: List<MessageCommand<*>>): EmbedBuilder {
+	private fun EmbedBuilder.addCommandInfoFields(callee: User, commandChain: List<MessageCommand<*>>): EmbedBuilder {
 		fun getFlatCommands(commandChain: List<MessageCommand<*>> = emptyList(), command: MessageCommand<*>): List<List<MessageCommand<*>>> {
 			val newCommandChain = commandChain + command
 			val results = mutableListOf<List<MessageCommand<*>>>()
@@ -42,8 +43,20 @@ class HelpCommand(
 		}
 
 		val command = commandChain.last()
-		if (command.subcommands.isNotEmpty())
-			addField("Subcommands", command.subcommands.joinToString(", ") { "`${it.name}`" }, false)
+		val allowedSubcommands = command.subcommands.filter {
+			for (predicate in it.predicates) {
+				when (predicate) {
+					is MessageCommandPredicate.UserContext -> {
+						if (!predicate.isMessageCommandAllowed(callee).isAllowed)
+							return@filter false
+					}
+					else -> continue
+				}
+			}
+			return@filter true
+		}
+		if (allowedSubcommands.isNotEmpty())
+			addField("Subcommands", allowedSubcommands.joinToString(", ") { "`${it.name}`" }, false)
 		addField("Usage", getFlatCommands(command = command).joinToString("\n") { "`${getCommandUsageString(commandChain.dropLast(1) + it)}`" }, false)
 		if (command.additionalDescription != null)
 			addField("Additional info", additionalDescription, false)
@@ -59,24 +72,33 @@ class HelpCommand(
 							groupedCommands.entries.joinToString("\n") { it.value.joinToString(", ") { "`${it.name}`" } },
 							false
 					)
-					addCommandInfoFields(listOf(this@HelpCommand))
+					addCommandInfoFields(message.author, listOf(this@HelpCommand))
 				}.build()
 		).queue()
 	}
 
 	private fun handleInfoCommand(message: Message, commandName: String) {
 		fun handle(nameChainLeft: List<String>, commandChain: List<MessageCommand<*>>): Boolean {
+			val command = commandChain.last()
+			for (predicate in command.predicates) {
+				when (predicate) {
+					is MessageCommandPredicate.UserContext -> {
+						if (!predicate.isMessageCommandAllowed(message.author).isAllowed)
+							return false
+					}
+					else -> continue
+				}
+			}
 			if (nameChainLeft.isEmpty()) {
 				message.reply(
 						EmbedBuilder().apply {
 							setTitle("Command `${commandChain.joinToString(" ") { it.name }}`")
 							appendDescription(commandChain.last().description)
-							addCommandInfoFields(commandChain)
+							addCommandInfoFields(message.author, commandChain)
 						}.build()
 				).queue()
 				return true
 			} else {
-				val command = commandChain.last()
 				val nextName = nameChainLeft.first()
 				for (subcommand in command.subcommands) {
 					if (subcommand.name.equals(nextName, true))

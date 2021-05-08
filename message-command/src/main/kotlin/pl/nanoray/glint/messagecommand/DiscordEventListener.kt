@@ -22,6 +22,8 @@ internal class DiscordEventListener(
 			event.message.reply("Missing required option `${e.optionName}`.").queue()
 		} catch (e: MessageCommandParser.UnhandledInputException) {
 			event.message.reply("Unhandled command input: `${e.input}`.").queue()
+		} catch (e: MessageCommandManager.DeniedCommandException) {
+			event.message.reply(e.reason).queue()
 		}
 	}
 }

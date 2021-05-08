@@ -7,6 +7,10 @@ import java.util.concurrent.locks.ReentrantLock
 import kotlin.concurrent.withLock
 
 interface MessageCommandManager {
+	class DeniedCommandException(
+			val reason: String
+	): Exception(reason)
+
 	val messageCommands: List<MessageCommand<*>>
 
 	fun registerMessageCommand(command: MessageCommand<*>)
@@ -52,6 +56,24 @@ class MessageCommandManagerImpl(
 			for (argumentLineParser in argumentLineParsers) {
 				fun handleCommand(command: MessageCommand<*>, rawArgumentLine: String): Boolean {
 					val commandNameAndArgumentLine = commandParser.parseMessageCommandNameAndArgumentLine(message, rawArgumentLine)
+					if (!command.name.equals(commandNameAndArgumentLine.commandName, true))
+						return false
+
+					for (predicate in command.predicates) {
+						if (predicate is MessageCommandPredicate.UserContext) {
+							when (val result = predicate.isMessageCommandAllowed(message.author)) {
+								MessageCommandPredicate.Result.Allowed -> continue
+								is MessageCommandPredicate.Result.Denied -> throw MessageCommandManager.DeniedCommandException(result.reason)
+							}
+						}
+						if (predicate is MessageCommandPredicate.MessageContext) {
+							when (val result = predicate.isMessageCommandAllowed(message)) {
+								MessageCommandPredicate.Result.Allowed -> continue
+								is MessageCommandPredicate.Result.Denied -> throw MessageCommandManager.DeniedCommandException(result.reason)
+							}
+						}
+					}
+
 					for (subcommand in command.subcommands) {
 						if (handleCommand(subcommand, commandNameAndArgumentLine.argumentLine))
 							return true
@@ -59,10 +81,21 @@ class MessageCommandManagerImpl(
 
 					if (!command.name.equals(commandNameAndArgumentLine.commandName, true))
 						return false
-					val options = commandParser.parseMessageCommandOptions(message, commandNameAndArgumentLine.argumentLine, command.optionsKlass)
-
 					@Suppress("UNCHECKED_CAST")
 					val anyTypedCommand = command as? MessageCommand<Any> ?: return false
+					val options = commandParser.parseMessageCommandOptions(message, commandNameAndArgumentLine.argumentLine, command.optionsKlass)
+
+					for (predicate in command.predicates) {
+						if (predicate is MessageCommandPredicate.MessageAndOptionsContext<*>) {
+							@Suppress("UNCHECKED_CAST")
+							val anyTypedPredicate = command as? MessageCommandPredicate.MessageAndOptionsContext<Any> ?: return false
+							when (val result = anyTypedPredicate.isMessageCommandAllowed(message, options)) {
+								MessageCommandPredicate.Result.Allowed -> continue
+								is MessageCommandPredicate.Result.Denied -> throw MessageCommandManager.DeniedCommandException(result.reason)
+							}
+						}
+					}
+
 					anyTypedCommand.handleCommand(message, options)
 					return true
 				}

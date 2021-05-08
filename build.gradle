@@ -5,6 +5,7 @@ import java.nio.file.StandardCopyOption
 buildscript {
 	ext.kotlinVersion = '1.5.0'
 	ext.unikornVersion = '32f873d95fe9e63c79eafe0df8d1770072040ea2'
+	ext.junitVersion = '5.3.2'
 
 	repositories {
 		mavenCentral()
@@ -55,13 +56,13 @@ subprojects {
 	}
 
 	dependencies {
-		testImplementation 'org.junit.jupiter:junit-jupiter-api:5.3.2'
-		testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.3.2'
+		testImplementation "org.junit.jupiter:junit-jupiter-api:$junitVersion"
+		testRuntimeOnly "org.junit.jupiter:junit-jupiter-engine:$junitVersion"
 	}
 
 	tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinCompile).all {
 		kotlinOptions {
-			jvmTarget = "1.8"
+			jvmTarget = '1.8'
 		}
 	}
 

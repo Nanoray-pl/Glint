@@ -12,6 +12,7 @@ class PluginCommand(
 	override val name = "plugin"
 	override val description = "List the current plugins."
 	override val subcommands = listOf(Reload())
+	override val predicates = listOf(MessageCommandPredicate.UserContext.IsOwner(resolver))
 
 	private val pluginManager: PluginManager.Dynamic.FullUnload.Reload by resolver.inject()
 
