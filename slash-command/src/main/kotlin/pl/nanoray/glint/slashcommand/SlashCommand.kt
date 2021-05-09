@@ -1,11 +1,13 @@
 package pl.nanoray.glint.slashcommand
 
 import net.dv8tion.jda.api.events.interaction.SlashCommandEvent
+import pl.nanoray.glint.command.CommandPredicate
 import kotlin.reflect.KClass
 
 sealed class SlashCommand {
 	abstract val name: String
 	abstract val description: String
+	open val predicates: List<CommandPredicate> = emptyList()
 
 	abstract fun getCommandMatchingPath(name: String, subcommandGroup: String?, subcommandName: String?): Simple<*>?
 

@@ -3,6 +3,7 @@ package pl.nanoray.glint.messagecommand
 import net.dv8tion.jda.api.EmbedBuilder
 import net.dv8tion.jda.api.entities.Message
 import net.dv8tion.jda.api.entities.User
+import pl.nanoray.glint.command.CommandPredicate
 import pl.shockah.unikorn.dependency.Resolver
 import pl.shockah.unikorn.dependency.inject
 
@@ -46,7 +47,7 @@ class HelpCommand(
 		val allowedSubcommands = command.subcommands.filter {
 			for (predicate in it.predicates) {
 				when (predicate) {
-					is MessageCommandPredicate.UserContext -> {
+					is CommandPredicate.UserContext -> {
 						if (!predicate.isMessageCommandAllowed(callee).isAllowed)
 							return@filter false
 					}
@@ -82,7 +83,7 @@ class HelpCommand(
 			val command = commandChain.last()
 			for (predicate in command.predicates) {
 				when (predicate) {
-					is MessageCommandPredicate.UserContext -> {
+					is CommandPredicate.UserContext -> {
 						if (!predicate.isMessageCommandAllowed(message.author).isAllowed)
 							return false
 					}

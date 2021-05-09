@@ -1,6 +1,5 @@
 package pl.nanoray.glint.plugin
 
-import com.github.marschall.pathclassloader.PathClassLoader
 import pl.shockah.unikorn.plugin.PluginLoader
 import pl.shockah.unikorn.plugin.PluginLoaderFactory
 import pl.shockah.unikorn.plugin.impl.ClassLoaderPluginLoader
@@ -8,12 +7,11 @@ import java.nio.file.FileSystems
 
 class PathPluginLoaderFactory: PluginLoaderFactory<PathPluginInfo> {
 	override fun createPluginLoader(pluginInfos: Collection<PathPluginInfo>): PluginLoader<PathPluginInfo> {
-		var currentClassLoader = Thread.currentThread().contextClassLoader
-		for (pluginInfo in pluginInfos) {
-			val fileSystem = FileSystems.newFileSystem(pluginInfo.jarPath, null)
-			val rootPath = fileSystem.rootDirectories.single()
-			currentClassLoader = PathClassLoader(rootPath, currentClassLoader)
+		val classLoaderPaths = pluginInfos.map {
+			val fileSystem = FileSystems.newFileSystem(it.jarPath, null)
+			return@map fileSystem.rootDirectories.single()
 		}
-		return ClassLoaderPluginLoader(currentClassLoader) { it.pluginClassName }
+		val classLoader = PathClassLoader(classLoaderPaths, Thread.currentThread().contextClassLoader)
+		return ClassLoaderPluginLoader(classLoader) { it.pluginClassName }
 	}
 }

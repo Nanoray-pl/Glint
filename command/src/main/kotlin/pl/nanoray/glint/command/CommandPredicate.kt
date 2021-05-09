@@ -1,10 +1,10 @@
-package pl.nanoray.glint.messagecommand
+package pl.nanoray.glint.command
 
 import net.dv8tion.jda.api.JDA
 import net.dv8tion.jda.api.Permission
 import net.dv8tion.jda.api.entities.Guild
 import net.dv8tion.jda.api.entities.GuildChannel
-import net.dv8tion.jda.api.entities.Message
+import net.dv8tion.jda.api.entities.MessageChannel
 import net.dv8tion.jda.api.entities.User
 import pl.nanoray.glint.CoreConfig
 import pl.nanoray.glint.jdaextensions.GuildIdentifier
@@ -13,7 +13,7 @@ import pl.nanoray.glint.jdaextensions.identifier
 import pl.shockah.unikorn.dependency.Resolver
 import pl.shockah.unikorn.dependency.inject
 
-sealed interface MessageCommandPredicate {
+sealed interface CommandPredicate {
 	sealed class Result {
 		companion object {
 			operator fun invoke(isAllowed: Boolean, elseReason: String): Result {
@@ -31,51 +31,51 @@ sealed interface MessageCommandPredicate {
 		): Result()
 	}
 
-	fun interface UserContext: MessageCommandPredicate {
+	fun interface UserContext: CommandPredicate {
 		fun isMessageCommandAllowed(user: User): Result
+	}
 
-		class IsOwner(
-				resolver: Resolver
-		): UserContext {
-			private val config: CoreConfig by resolver.inject()
+	fun interface ChannelUserContext: CommandPredicate {
+		fun isMessageCommandAllowed(channel: MessageChannel, user: User): Result
+	}
 
-			override fun isMessageCommandAllowed(user: User): Result {
-				val isAllowed = user.identifier == config.owner
-				return Result(isAllowed, "This command is only for the bot owners.")
-			}
+	fun interface ChannelUserOptionsContext<T: Any>: CommandPredicate {
+		fun isMessageCommandAllowed(channel: MessageChannel, user: User, options: T): Result
+	}
+
+	class IsOwner(
+			resolver: Resolver
+	): UserContext {
+		private val config: CoreConfig by resolver.inject()
+
+		override fun isMessageCommandAllowed(user: User): Result {
+			val isAllowed = user.identifier == config.owner
+			return Result(isAllowed, "This command is only for the bot owners.")
 		}
 	}
 
-	fun interface MessageContext: MessageCommandPredicate {
-		fun isMessageCommandAllowed(message: Message): Result
+	class HasGuildPermissions(
+			private val permissions: Collection<Permission>
+	): ChannelUserContext {
+		constructor(vararg permissions: Permission): this(permissions.toList())
 
-		class HasGuildPermissions(
-				private val permissions: Collection<Permission>
-		): MessageContext {
-			constructor(vararg permissions: Permission): this(permissions.toList())
-
-			override fun isMessageCommandAllowed(message: Message): Result {
-				val isAllowed = (message.channel as? GuildChannel)?.guild?.retrieveMember(message.author)?.complete()?.hasPermission(permissions) == true
-				return Result(isAllowed, "This command requires additional permissions: ${permissions.joinToString(", ") { it.getName() }}.")
-			}
+		override fun isMessageCommandAllowed(channel: MessageChannel, user: User): Result {
+			val isAllowed = (channel as? GuildChannel)?.guild?.retrieveMember(user)?.complete()?.hasPermission(permissions) == true
+			return Result(isAllowed, "This command requires additional permissions: ${permissions.joinToString(", ") { it.getName() }}.")
 		}
-	}
 
-	fun interface MessageAndOptionsContext<T: Any>: MessageCommandPredicate {
-		fun isMessageCommandAllowed(message: Message, options: T): Result
-
-		class HasGuildPermissions<T: Any>(
+		class FromOptions<T: Any>(
 				private val permissions: Collection<Permission>,
 				private val guildSupplier: (T) -> Guild
-		): MessageAndOptionsContext<T> {
+		): ChannelUserOptionsContext<T> {
 			constructor(
 					vararg permissions: Permission,
 					guildSupplier: (T) -> Guild
 			): this(permissions.toList(), guildSupplier)
 
-			override fun isMessageCommandAllowed(message: Message, options: T): Result {
+			override fun isMessageCommandAllowed(channel: MessageChannel, user: User, options: T): Result {
 				val guild = guildSupplier(options)
-				val isAllowed = guild.retrieveMember(message.author).complete()?.hasPermission(permissions) == true
+				val isAllowed = guild.retrieveMember(user).complete()?.hasPermission(permissions) == true
 				return Result(isAllowed, "This command requires additional permissions: ${permissions.joinToString(", ") { it.getName() }}.")
 			}
 
@@ -83,7 +83,7 @@ sealed interface MessageCommandPredicate {
 					resolver: Resolver,
 					private val permissions: Collection<Permission>,
 					private val guildSupplier: (T) -> GuildIdentifier
-			): MessageAndOptionsContext<T> {
+			): ChannelUserOptionsContext<T> {
 				constructor(
 						resolver: Resolver,
 						vararg permissions: Permission,
@@ -92,9 +92,9 @@ sealed interface MessageCommandPredicate {
 
 				private val jda: JDA by resolver.inject()
 
-				override fun isMessageCommandAllowed(message: Message, options: T): Result {
+				override fun isMessageCommandAllowed(channel: MessageChannel, user: User, options: T): Result {
 					val guild = guildSupplier(options)
-					val isAllowed = jda.getGuild(guild)?.retrieveMember(message.author)?.complete()?.hasPermission(permissions) == true
+					val isAllowed = jda.getGuild(guild)?.retrieveMember(user)?.complete()?.hasPermission(permissions) == true
 					return Result(isAllowed, "This command requires additional permissions: ${permissions.joinToString(", ") { it.getName() }}.")
 				}
 			}

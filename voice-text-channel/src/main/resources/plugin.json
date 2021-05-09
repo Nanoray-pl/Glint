@@ -1,9 +1,7 @@
 {
 	"identifier": "pl.nanoray.glint.voicetextchannel",
 	"pluginClassName": "pl.nanoray.glint.voicetextchannel.VoiceTextChannelPlugin",
-	"depenencies": [
-		{
-			"identifier": "pl.nanoray.glint.command"
-		}
+	"dependencies": [
+		{"identifier": "pl.nanoray.glint.slashcommand"}
 	]
 }

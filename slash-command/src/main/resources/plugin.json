@@ -1,4 +1,7 @@
 {
 	"identifier": "pl.nanoray.glint.slashcommand",
-	"pluginClassName": "pl.nanoray.glint.slashcommand.SlashCommandPlugin"
+	"pluginClassName": "pl.nanoray.glint.slashcommand.SlashCommandPlugin",
+	"dependencies": [
+		{"identifier": "pl.nanoray.glint.command"}
+	]
 }
