@@ -1,11 +1,30 @@
 package pl.nanoray.glint.jdaextensions
 
+import kotlinx.serialization.KSerializer
+import kotlinx.serialization.Serializable
+import kotlinx.serialization.encoding.Decoder
+import kotlinx.serialization.encoding.Encoder
 import net.dv8tion.jda.api.entities.*
 import net.dv8tion.jda.api.interactions.commands.Command
 
+@Serializable(SnowflakeIdentifierSerializer::class)
 data class SnowflakeIdentifier<out SnowflakeType: ISnowflake>(
 		val value: Long
 )
+
+class SnowflakeIdentifierSerializer<SnowflakeType: ISnowflake>(
+		private val longSerializer: KSerializer<Long>
+): KSerializer<SnowflakeIdentifier<SnowflakeType>> {
+	override val descriptor = longSerializer.descriptor
+
+	override fun serialize(encoder: Encoder, value: SnowflakeIdentifier<SnowflakeType>) {
+		encoder.encodeLong(value.value)
+	}
+
+	override fun deserialize(decoder: Decoder): SnowflakeIdentifier<SnowflakeType> {
+		return SnowflakeIdentifier(decoder.decodeLong())
+	}
+}
 
 val <T: ISnowflake> T.identifier: SnowflakeIdentifier<T>
 	get() = SnowflakeIdentifier(idLong)

@@ -1,5 +1,3 @@
-ext.hopliteVersion = '1.4.0'
-
 dependencies {
 	implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8:$kotlinVersion"
 	implementation "org.jetbrains.kotlin:kotlin-reflect:$kotlinVersion"
@@ -14,11 +12,6 @@ dependencies {
 	api 'com.github.dv8fromtheworld:jda:5951675256d2418ed50fdfebc540438c4f6d001e'
 	api 'com.xenomachina:kotlin-argparser:2.0.7'
 	api 'io.reactivex.rxjava3:rxkotlin:3.0.1'
-
-	api "com.sksamuel.hoplite:hoplite-core:$hopliteVersion"
-	runtimeOnly "com.sksamuel.hoplite:hoplite-json:$hopliteVersion"
-	runtimeOnly "com.sksamuel.hoplite:hoplite-yaml:$hopliteVersion"
-	runtimeOnly "com.sksamuel.hoplite:hoplite-toml:$hopliteVersion"
 }
 
 test {

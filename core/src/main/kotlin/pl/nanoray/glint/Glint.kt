@@ -43,7 +43,7 @@ class Glint(
 
 	private fun Container.configureConfiguration() {
 		register<ConfigManager> { ConfigManagerImpl(arguments.configPath) }
-		register { it.resolve<ConfigManager>().getConfig(CoreConfig::class) ?: throw IllegalArgumentException("Cannot parse CoreConfig.") }
+		register { it.resolve<ConfigManager>().getConfig<CoreConfig>() ?: throw IllegalArgumentException("Cannot parse CoreConfig.") }
 	}
 
 	private fun Container.configureBusinessLogic() {

@@ -23,7 +23,7 @@ class MessageCommandPlugin(
 	private val pluginsCommand = PluginCommand(resolver)
 
 	init {
-		pluginContainer.register { it.resolve<ConfigManager>().getConfig(Config::class) ?: throw IllegalArgumentException("Cannot parse Config.") }
+		pluginContainer.register { it.resolve<ConfigManager>().getConfig<Config>() ?: throw IllegalArgumentException("Cannot parse Config.") }
 		register<MessageCommandParser> { MessageCommandParserImpl(it) }
 		register<MessageCommandManager> {
 			val config = pluginContainer.resolve<Config>()
