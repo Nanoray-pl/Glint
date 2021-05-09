@@ -60,11 +60,6 @@ subprojects {
 	}
 
 	dependencies {
-		// serialization
-		implementation 'org.jetbrains.kotlinx:kotlinx-serialization-json:1.2.0'
-//		implementation 'org.jetbrains.kotlinx:kotlinx-serialization-properties:1.2.0'
-//		implementation 'com.charleskorn.kaml:kaml:0.31.0'
-
 		// unit tests
 		testImplementation "org.junit.jupiter:junit-jupiter-api:$junitVersion"
 		testRuntimeOnly "org.junit.jupiter:junit-jupiter-engine:$junitVersion"

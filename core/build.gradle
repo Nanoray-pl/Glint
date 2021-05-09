@@ -6,6 +6,11 @@ dependencies {
 	api "com.github.Shockah.Unikorn:plugin:$unikornVersion"
 	api "com.github.Shockah.Unikorn:dependency:$unikornVersion"
 
+	// serialization
+	api 'org.jetbrains.kotlinx:kotlinx-serialization-json:1.2.0'
+	api 'org.jetbrains.kotlinx:kotlinx-serialization-properties:1.2.0'
+	api 'com.charleskorn.kaml:kaml:0.31.0'
+
 //	api 'net.dv8tion:JDA:4.2.1_261'
 	implementation 'com.github.marschall:path-classloader:0.1.0'
 	implementation 'com.beust:klaxon:5.5'
