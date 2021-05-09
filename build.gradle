@@ -4,7 +4,7 @@ import java.nio.file.StandardCopyOption
 
 buildscript {
 	ext.kotlinVersion = '1.5.0'
-	ext.unikornVersion = '32f873d95fe9e63c79eafe0df8d1770072040ea2'
+	ext.unikornVersion = '1c1f61e0f90b3c791b9d842fe69a999a9f5d0a6c'
 	ext.junitVersion = '5.3.2'
 
 	repositories {
@@ -21,15 +21,8 @@ buildscript {
 	}
 }
 
-project.subprojects.each {
-	def pluginJsonFile = new File(it.projectDir, "src/main/resources/plugin.json")
-	if (pluginJsonFile.exists()) {
-		def pluginJson = new JsonSlurper().parseText(pluginJsonFile.text)
-		it.ext.isPlugin = true
-		it.ext.pluginVersion = pluginJson.version ?: "1.0"
-	} else {
-		it.ext.isPlugin = false
-	}
+project.subprojects.each {project ->
+	ext.isPlugin = (["json", "yml", "yaml"].any { new File(project.projectDir, "src/main/resources/plugin.${it}").exists() })
 }
 
 subprojects {
@@ -81,7 +74,7 @@ subprojects {
 
 			doLast {
 				def source = new File(buildDir, "libs/$project.name-all.jar")
-				def destination = new File(project(':core').projectDir.parentFile, "test/plugins/${safeFullName}-${project.pluginVersion}.jar")
+				def destination = new File(project(':core').projectDir.parentFile, "test/plugins/${safeFullName}.jar")
 				destination.parentFile.mkdirs()
 				Files.copy(source.toPath(), destination.toPath(), StandardCopyOption.REPLACE_EXISTING)
 			}

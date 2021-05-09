@@ -1,11 +1,11 @@
 package pl.nanoray.glint.plugin
 
-import com.beust.klaxon.JsonObject
-import com.beust.klaxon.Klaxon
+import com.charleskorn.kaml.Yaml
+import kotlinx.serialization.decodeFromString
+import kotlinx.serialization.json.Json
 import pl.shockah.unikorn.collection.mapValid
-import pl.shockah.unikorn.plugin.PluginInfo
 import pl.shockah.unikorn.plugin.PluginInfoProvider
-import pl.shockah.unikorn.plugin.PluginVersion
+import pl.shockah.unikorn.plugin.impl.FilePluginInfo
 import java.io.BufferedInputStream
 import java.nio.file.Files
 import java.nio.file.Path
@@ -17,7 +17,7 @@ import kotlin.io.path.isRegularFile
 class PathPluginInfoProvider(
 		private val pluginPath: Path
 ): PluginInfoProvider<PathPluginInfo> {
-	class MissingPluginJsonException: Exception()
+	class MissingPluginDefinitionException: Exception()
 
 	override fun getPluginInfos(): Set<PathPluginInfo> {
 		return Files.newDirectoryStream(pluginPath).filter { it.extension == "jar" }.mapValid { readPluginInfo(it) }.toSet()
@@ -27,26 +27,31 @@ class PathPluginInfoProvider(
 		require(jarPath.exists() && jarPath.isRegularFile()) { "Plugin JAR file $jarPath doesn't exist." }
 
 		ZipInputStream(BufferedInputStream(Files.newInputStream(jarPath))).use { zip ->
+			val handlers: List<Pair<List<String>, (String) -> FilePluginInfo.Base?>> = listOf(
+					listOf("yml", "yaml") to { Yaml.default.decodeFromString(it) },
+					listOf("json") to { Json.Default.decodeFromString(it) }
+			)
 			while (true) {
-				(zip.nextEntry ?: throw MissingPluginJsonException()).takeIf { it.name == "plugin.json" } ?: continue
-				val json = Klaxon().parseJsonObject(zip.reader())
-				return readPluginInfo(json, jarPath)
+				val zipEntry = zip.nextEntry ?: throw MissingPluginDefinitionException()
+				for ((extensions, handler) in handlers) {
+					for (extension in extensions) {
+						if (zipEntry.name != "plugin.$extension")
+							continue
+						val content = zip.bufferedReader().use { it.readText() }
+						return readPluginInfo(handler(content) ?: continue, jarPath)
+					}
+				}
 			}
 		}
 	}
 
-	private fun readPluginInfo(json: JsonObject, jarPath: Path): PathPluginInfo {
+	private fun readPluginInfo(basePluginInfo: FilePluginInfo.Base, jarPath: Path): PathPluginInfo {
 		return PathPluginInfo(
-				json.string("identifier")!!,
-				PluginVersion(json.string("version") ?: "1.0"),
-				json.array<JsonObject>("dependencies")?.map {
-					PluginInfo.DependencyEntry(
-							it.string("identifier")!!,
-							PluginVersion.Filter(it.string("version") ?: "*")
-					)
-				}?.toSet() ?: emptySet(),
+				basePluginInfo.identifier,
+				basePluginInfo.version,
+				basePluginInfo.dependencies,
 				jarPath,
-				json.string("pluginClassName")!!
+				basePluginInfo.pluginClassName
 		)
 	}
 }

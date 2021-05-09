@@ -1,7 +1,0 @@
-{
-	"identifier": "pl.nanoray.glint.messagecommand",
-	"pluginClassName": "pl.nanoray.glint.messagecommand.MessageCommandPlugin",
-	"dependencies": [
-		{"identifier": "pl.nanoray.glint.command"}
-	]
-}
