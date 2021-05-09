@@ -6,10 +6,10 @@ import net.dv8tion.jda.api.entities.Guild
 import net.dv8tion.jda.api.entities.GuildChannel
 import net.dv8tion.jda.api.entities.MessageChannel
 import net.dv8tion.jda.api.entities.User
-import pl.nanoray.glint.CoreConfig
 import pl.nanoray.glint.jdaextensions.GuildIdentifier
 import pl.nanoray.glint.jdaextensions.getGuild
-import pl.nanoray.glint.jdaextensions.identifier
+import pl.nanoray.glint.owner.OwnerManager
+import pl.nanoray.glint.owner.isOwner
 import pl.shockah.unikorn.dependency.Resolver
 import pl.shockah.unikorn.dependency.inject
 
@@ -46,10 +46,10 @@ sealed interface CommandPredicate {
 	class IsOwner(
 			resolver: Resolver
 	): UserContext {
-		private val config: CoreConfig by resolver.inject()
+		private val ownerManager: OwnerManager by resolver.inject()
 
 		override fun isMessageCommandAllowed(user: User): Result {
-			val isAllowed = user.identifier == config.owner
+			val isAllowed = ownerManager.isOwner(user)
 			return Result(isAllowed, "This command is only for the bot owners.")
 		}
 	}
