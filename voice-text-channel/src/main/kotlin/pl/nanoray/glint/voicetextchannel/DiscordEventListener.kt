@@ -4,7 +4,6 @@ import net.dv8tion.jda.api.JDA
 import net.dv8tion.jda.api.events.GenericEvent
 import net.dv8tion.jda.api.events.guild.voice.GenericGuildVoiceUpdateEvent
 import net.dv8tion.jda.api.hooks.ListenerAdapter
-import pl.nanoray.glint.jdaextensions.identifier
 import pl.shockah.unikorn.dependency.Resolver
 import pl.shockah.unikorn.dependency.inject
 
@@ -17,7 +16,9 @@ internal class DiscordEventListener(
 
 	override fun onGenericEvent(event: GenericEvent) {
 		if (event is GenericGuildVoiceUpdateEvent) {
-			discordWorker.updateAccess(event.channelLeft?.identifier, event.channelJoined?.identifier, event.guild.identifier, event.member.user.identifier)
+			discordWorker
+					.updateAccess(event.channelLeft, event.channelJoined, event.guild, event.member)
+					.subscribe()
 		}
 	}
 }

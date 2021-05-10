@@ -69,6 +69,7 @@ internal class MessageCommandParserImpl(
 			StringMessageCommandOptionParser,
 			UserMessageCommandOptionParser(resolver),
 			RoleMessageCommandOptionParser(resolver),
+			GuildChannelMessageCommandOptionParser(resolver),
 			TextChannelMessageCommandOptionParser(resolver),
 			VoiceChannelMessageCommandOptionParser(resolver)
 	)
@@ -231,7 +232,7 @@ internal class MessageCommandParserImpl(
 				if (argumentLineLeft.isEmpty()) {
 					return null
 				} else if (parseOptionResult.shouldParseWhole) {
-					val result = argumentLineLeft
+					val result = argumentLineLeft.trim()
 					argumentLineLeft = ""
 					return result
 				} else {
@@ -242,7 +243,7 @@ internal class MessageCommandParserImpl(
 						} else {
 							for (i in 2 until argumentLineLeft.length) {
 								if (argumentLineLeft[i] == '"' && argumentLineLeft[i - 1] != '\\') {
-									val result = argumentLineLeft.take(i).drop(1).replace("\\\"", "\"").replace("\\\\", "\\")
+									val result = argumentLineLeft.take(i).drop(1).replace("\\\"", "\"").replace("\\\\", "\\").trim()
 									argumentLineLeft = argumentLineLeft.drop(i + 1).trim()
 									return result
 								}
@@ -252,12 +253,12 @@ internal class MessageCommandParserImpl(
 					} else {
 						for (i in 1 until argumentLineLeft.length) {
 							if (argumentLineLeft[i].isWhitespace()) {
-								val result = argumentLineLeft.take(i + 1)
+								val result = argumentLineLeft.take(i + 1).trim()
 								argumentLineLeft = argumentLineLeft.drop(i + 1).trim()
 								return result
 							}
 						}
-						val result = argumentLineLeft
+						val result = argumentLineLeft.trim()
 						argumentLineLeft = ""
 						return result
 					}

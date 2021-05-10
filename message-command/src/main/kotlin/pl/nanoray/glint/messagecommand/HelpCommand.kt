@@ -61,7 +61,7 @@ internal class HelpCommand(
 			addField("Subcommands", allowedSubcommands.joinToString(", ") { "`${it.name}`" }, false)
 		addField("Usage", getFlatCommands(command = command).joinToString("\n") { "`${getCommandUsageString(commandChain.dropLast(1) + it)}`" }, false)
 		if (command.additionalDescription != null)
-			addField("Additional info", additionalDescription, false)
+			addField("Additional info", command.additionalDescription, false)
 		return this
 	}
 

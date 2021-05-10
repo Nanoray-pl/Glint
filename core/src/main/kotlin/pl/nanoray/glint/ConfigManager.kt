@@ -13,33 +13,33 @@ import kotlin.reflect.KType
 import kotlin.reflect.typeOf
 
 interface ConfigManager {
-	fun <T: Any> getConfig(type: KType, klass: KClass<T>, name: String): T?
-	fun <T: Any> storeConfig(type: KType, klass: KClass<T>, name: String, config: T)
-}
+	fun getConfig(type: KType, name: String): Any?
+	fun storeConfig(type: KType, name: String, config: Any?)
 
-fun <T: Any> ConfigManager.getConfig(type: KType, klass: KClass<T>): T? {
-	return klass.qualifiedName?.let { getConfig(type, klass, it) }
+	fun getConfig(type: KType): Any? {
+		return (type.classifier as? KClass<*>)?.qualifiedName?.let { getConfig(type, it) }
+	}
+
+	fun storeConfig(type: KType, config: Any?) {
+		val name = (type.classifier as? KClass<*>)?.qualifiedName ?: throw IllegalArgumentException()
+		storeConfig(type, name, config)
+	}
 }
 
 inline fun <reified T: Any> ConfigManager.getConfig(name: String): T? {
-	return getConfig(typeOf<T>(), T::class, name)
+	return getConfig(typeOf<T>(), name) as? T
 }
 
 inline fun <reified T: Any> ConfigManager.getConfig(): T? {
-	return getConfig(typeOf<T>(), T::class)
+	return getConfig(typeOf<T>()) as? T
 }
 
-fun <T: Any> ConfigManager.storeConfig(type: KType, klass: KClass<T>, config: T) {
-	val name = klass.qualifiedName ?: throw IllegalArgumentException()
-	storeConfig(type, klass, name, config)
+inline fun <reified T: Any> ConfigManager.storeConfig(name: String, config: T?) {
+	storeConfig(typeOf<T>(), name, config)
 }
 
-inline fun <reified T: Any> ConfigManager.storeConfig(name: String, config: T) {
-	storeConfig(typeOf<T>(), T::class, name, config)
-}
-
-inline fun <reified T: Any> ConfigManager.storeConfig(config: T) {
-	storeConfig(typeOf<T>(), T::class, config)
+inline fun <reified T: Any> ConfigManager.storeConfig(config: T?) {
+	storeConfig(typeOf<T>(), config)
 }
 
 internal class ConfigManagerImpl(
@@ -52,24 +52,34 @@ internal class ConfigManagerImpl(
 	private val propertiesFormat = Properties
 	private val yamlFormat = Yaml.Default
 
-	override fun <T: Any> getConfig(type: KType, klass: KClass<T>, name: String): T? {
+	override fun getConfig(type: KType, name: String): Any? {
 		return getYamlConfig(type, name) ?: getJsonConfig(type, name) ?: getPropertiesConfig(type, name)
 	}
 
-	override fun <T: Any> storeConfig(type: KType, klass: KClass<T>, name: String, config: T) {
-		val configHandlers = listOf<Pair<List<String>, (Path) -> Unit>>(
-				listOf("yml", "yaml") to { path -> storeYamlConfig(type, path, config) },
-				listOf("json") to { path -> storeJsonConfig(type, path, config) },
-				listOf("props", "properties") to { path -> storePropertiesConfig(type, path, config) }
+	override fun storeConfig(type: KType, name: String, config: Any?) {
+		@Suppress("NAME_SHADOWING")
+		val configHandlers = listOf<Pair<List<String>, (Path, Any) -> Unit>>(
+				listOf("yml", "yaml") to { path, config -> storeYamlConfig(type, path, config) },
+				listOf("json") to { path, config -> storeJsonConfig(type, path, config) },
+				listOf("props", "properties") to { path, config -> storePropertiesConfig(type, path, config) }
 		)
 		for ((extensions, configHandler) in configHandlers) {
 			for (extension in extensions) {
 				val path = configPath.resolve("${name}.$extension")
-				if (path.exists())
-					configHandler(path)
+				if (path.exists()) {
+					if (config == null)
+						path.deleteIfExists()
+					else
+						configHandler(path, config)
+				}
 			}
 		}
-		storeYamlConfig(type, configPath.resolve("${name}.yml"), config)
+
+		val path = configPath.resolve("${name}.yml")
+		if (config == null)
+			path.deleteIfExists()
+		else
+			storeYamlConfig(type, path, config)
 	}
 
 	private fun <T: Any> getYamlConfig(type: KType, name: String): T? {

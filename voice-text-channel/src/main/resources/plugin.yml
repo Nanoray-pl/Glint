@@ -1,4 +1,6 @@
 identifier: pl.nanoray.glint.voicetextchannel
 pluginClassName: pl.nanoray.glint.voicetextchannel.VoiceTextChannelPlugin
 dependencies:
-- {identifier: pl.nanoray.glint.slashcommand}
+- {identifier: pl.nanoray.glint.command}
+- {identifier: pl.nanoray.glint.messagecommand}
+- {identifier: pl.nanoray.glint.store}

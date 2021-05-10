@@ -5,6 +5,7 @@ import net.dv8tion.jda.api.JDA
 import net.dv8tion.jda.api.JDABuilder
 import pl.nanoray.glint.plugin.PathPluginInfoProvider
 import pl.nanoray.glint.plugin.PathPluginLoaderFactory
+import pl.nanoray.glint.utilities.DurationSerializer
 import pl.shockah.unikorn.dependency.*
 import pl.shockah.unikorn.plugin.InstancePluginConstructorParameterHandler
 import pl.shockah.unikorn.plugin.Plugin
@@ -55,6 +56,17 @@ class Glint(
 					parameterHandlers = listOf(
 							InstancePluginConstructorParameterHandler(container),
 							object: PluginConstructorParameterHandler {
+								private val pluginManager: PluginManager by it.inject()
+
+								override fun handleConstructorParameter(constructor: KFunction<Plugin>, parameter: KParameter): Any {
+									for (plugin in pluginManager.loadedPlugins.values) {
+										if ((parameter.type.classifier as? KClass<*>)?.isInstance(plugin) == true)
+											return plugin
+									}
+									throw PluginConstructorParameterHandler.UnhandledParameter()
+								}
+							},
+							object: PluginConstructorParameterHandler {
 								override fun handleConstructorParameter(constructor: KFunction<Plugin>, parameter: KParameter): Any {
 									try {
 										return it.resolve(parameter.type, parameter.type.classifier as KClass<*>)
@@ -66,6 +78,6 @@ class Glint(
 					)
 			)
 		}
-		register<DurationParser> { DefaultDurationParser() }
+		register<DurationParser> { DurationSerializer }
 	}
 }

@@ -5,6 +5,7 @@ import pl.nanoray.glint.jdaextensions.TextChannelIdentifier
 import pl.nanoray.glint.jdaextensions.VoiceChannelIdentifier
 import pl.nanoray.glint.utilities.WithDefault
 import javax.annotation.CheckReturnValue
+import kotlin.time.Duration
 
 interface VoiceTextChannelManagerObserver {
 	fun onVoiceTextChannelMappingAdded(manager: VoiceTextChannelManager, mapping: ChannelMapping) { }
@@ -12,10 +13,11 @@ interface VoiceTextChannelManagerObserver {
 }
 
 interface VoiceTextChannelManager {
+	val voiceTextChannelMappings: Set<ChannelMapping>
+
 	fun addVoiceTextChannelObserver(observer: VoiceTextChannelManagerObserver)
 	fun removeVoiceTextChannelObserver(observer: VoiceTextChannelManagerObserver)
 
-	fun getVoiceTextChannelMappings(): Set<ChannelMapping>
 	fun getMappingForVoiceChannel(voiceChannel: VoiceChannelIdentifier): ChannelMapping?
 	fun getMappingForTextChannel(textChannel: TextChannelIdentifier): ChannelMapping?
 }
@@ -24,7 +26,7 @@ interface WritableVoiceTextChannelManager: VoiceTextChannelManager {
 	@CheckReturnValue fun linkTextChannelToVoiceChannel(
 			textChannel: TextChannelIdentifier,
 			voiceChannel: VoiceChannelIdentifier,
-			configuration: WithDefault<ChannelMapping.Configuration>
+			duration: WithDefault<Duration>
 	): Completable
 
 	@CheckReturnValue fun unlinkTextChannelFromVoiceChannel(textChannel: TextChannelIdentifier): Completable

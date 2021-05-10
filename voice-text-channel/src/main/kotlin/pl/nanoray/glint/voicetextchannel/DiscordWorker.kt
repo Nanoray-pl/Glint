@@ -3,15 +3,20 @@ package pl.nanoray.glint.voicetextchannel
 import io.reactivex.rxjava3.core.Completable
 import net.dv8tion.jda.api.JDA
 import net.dv8tion.jda.api.Permission
-import pl.nanoray.glint.jdaextensions.*
+import net.dv8tion.jda.api.entities.Guild
+import net.dv8tion.jda.api.entities.Member
+import net.dv8tion.jda.api.entities.VoiceChannel
+import pl.nanoray.glint.jdaextensions.asSingle
+import pl.nanoray.glint.jdaextensions.getTextChannel
+import pl.nanoray.glint.jdaextensions.identifier
 import pl.shockah.unikorn.dependency.Resolver
 import pl.shockah.unikorn.dependency.inject
 import javax.annotation.CheckReturnValue
 
 internal interface DiscordWorker {
-	@CheckReturnValue fun grantAccess(mapping: ChannelMapping, guild: GuildIdentifier, member: UserIdentifier): Completable
-	@CheckReturnValue fun denyAccess(mapping: ChannelMapping, guild: GuildIdentifier, member: UserIdentifier): Completable
-	@CheckReturnValue fun updateAccess(channelLeft: VoiceChannelIdentifier?, channelJoined: VoiceChannelIdentifier?, guild: GuildIdentifier, member: UserIdentifier): Completable
+	@CheckReturnValue fun grantAccess(mapping: ChannelMapping, guild: Guild, member: Member): Completable
+	@CheckReturnValue fun denyAccess(mapping: ChannelMapping, guild: Guild, member: Member): Completable
+	@CheckReturnValue fun updateAccess(channelLeft: VoiceChannel?, channelJoined: VoiceChannel?, guild: Guild, member: Member): Completable
 }
 
 internal class DiscordWorkerImpl(
@@ -21,33 +26,29 @@ internal class DiscordWorkerImpl(
 	private val voiceTextChannelManager: VoiceTextChannelManager by resolver.inject()
 
 	@CheckReturnValue
-	override fun grantAccess(mapping: ChannelMapping, guild: GuildIdentifier, member: UserIdentifier): Completable {
+	override fun grantAccess(mapping: ChannelMapping, guild: Guild, member: Member): Completable {
 		val textChannel = jda.getTextChannel(mapping.textChannel) ?: throw IllegalArgumentException("Missing text channel ${mapping.textChannel} mapped to voice channel ${mapping.voiceChannel}.")
-		val guildEntity = requireNotNull(jda.getGuild(guild))
-		val memberEntity = requireNotNull(guildEntity.getMember(member))
-		return textChannel.upsertPermissionOverride(memberEntity)
+		return textChannel.upsertPermissionOverride(member)
 				.grant(Permission.VIEW_CHANNEL)
 				.asSingle()
 				.ignoreElement()
 	}
 
 	@CheckReturnValue
-	override fun denyAccess(mapping: ChannelMapping, guild: GuildIdentifier, member: UserIdentifier): Completable {
+	override fun denyAccess(mapping: ChannelMapping, guild: Guild, member: Member): Completable {
 		val textChannel = jda.getTextChannel(mapping.textChannel) ?: throw IllegalArgumentException("Missing text channel ${mapping.textChannel} mapped to voice channel ${mapping.voiceChannel}.")
-		val guildEntity = requireNotNull(jda.getGuild(guild))
-		val memberEntity = requireNotNull(guildEntity.getMember(member))
-		return textChannel.upsertPermissionOverride(memberEntity)
+		return textChannel.upsertPermissionOverride(member)
 				.clear(Permission.VIEW_CHANNEL)
 				.asSingle()
 				.ignoreElement()
 	}
 
 	@CheckReturnValue
-	override fun updateAccess(channelLeft: VoiceChannelIdentifier?, channelJoined: VoiceChannelIdentifier?, guild: GuildIdentifier, member: UserIdentifier): Completable {
+	override fun updateAccess(channelLeft: VoiceChannel?, channelJoined: VoiceChannel?, guild: Guild, member: Member): Completable {
 		require(channelLeft != null || channelJoined != null)
 		val completables = mutableListOf<Completable>()
-		channelLeft?.let { voiceTextChannelManager.getMappingForVoiceChannel(it) }?.let { completables.add(denyAccess(it, guild, member)) }
-		channelJoined?.let { voiceTextChannelManager.getMappingForVoiceChannel(it) }?.let { completables.add(grantAccess(it, guild, member)) }
+		channelLeft?.let { voiceTextChannelManager.getMappingForVoiceChannel(it.identifier) }?.let { completables.add(denyAccess(it, guild, member)) }
+		channelJoined?.let { voiceTextChannelManager.getMappingForVoiceChannel(it.identifier) }?.let { completables.add(grantAccess(it, guild, member)) }
 		return when (completables.size) {
 			0 -> Completable.complete()
 			1 -> completables.first()

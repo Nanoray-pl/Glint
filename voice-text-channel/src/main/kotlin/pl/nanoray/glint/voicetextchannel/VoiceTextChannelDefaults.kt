@@ -4,7 +4,5 @@ import java.util.concurrent.TimeUnit
 import kotlin.time.toDuration
 
 object VoiceTextChannelDefaults {
-	val mappingConfiguration = ChannelMapping.Configuration(
-			historyDuration = 15.toDuration(TimeUnit.MINUTES)
-	)
+	val historyDuration = 15.toDuration(TimeUnit.MINUTES)
 }

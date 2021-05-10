@@ -185,6 +185,39 @@ class RoleMessageCommandOptionParser(
 	}
 }
 
+class GuildChannelMessageCommandOptionParser(
+		resolver: Resolver
+): MessageCommandOptionParser {
+	private val jda: JDA by resolver.inject()
+
+	private val regex = Regex("<#(\\d+)>")
+
+	override fun canParseMessageCommandOption(type: KType): Boolean {
+		return type in createNullabilityTypeVariants<GuildChannelIdentifier>() || type in createNullabilityTypeVariants<GuildChannel>()
+	}
+
+	override fun parseMessageCommandOption(message: Message, type: KType, text: String): Any {
+		return when (type) {
+			in createNullabilityTypeVariants<GuildChannelIdentifier>() -> parseGuildChannelIdentifier(message, text)
+			in createNullabilityTypeVariants<GuildChannel>() -> parseGuildChannel(message, text)
+			else -> throw MessageCommandOptionParser.ParseException("Cannot parse `$text` as `GuildChannel`.")
+		}
+	}
+
+	private fun parseGuildChannelIdentifier(message: Message, text: String): GuildChannelIdentifier {
+		regex.find(text)?.groups?.get(1)?.value?.let { return GuildChannelIdentifier(it.toLong()) }
+		text.toLongOrNull()?.let { jda.getGuildChannelById(it) }?.let { return it.identifier }
+		(message.channel as? GuildChannel)?.guild?.getTextChannelsByName(text, true)?.singleOrNull()?.let { return it.identifier }
+		(message.channel as? GuildChannel)?.guild?.getVoiceChannelsByName(text, true)?.singleOrNull()?.let { return it.identifier }
+		throw MessageCommandOptionParser.ParseException("Cannot find channel `$text`.")
+	}
+
+	private fun parseGuildChannel(message: Message, text: String): GuildChannel {
+		val id = parseGuildChannelIdentifier(message, text)
+		return jda.getGuildChannel(id) ?: throw MessageCommandOptionParser.ParseException("Cannot find channel `$text`.")
+	}
+}
+
 class TextChannelMessageCommandOptionParser(
 		resolver: Resolver
 ): MessageCommandOptionParser {

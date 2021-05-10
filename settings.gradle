@@ -1,5 +1,6 @@
 include 'core'
 include 'command', 'slash-command', 'message-command'
 include 'owner'
+include 'store'
 include 'voice-text-channel'
 include 'ranking'
