@@ -144,12 +144,12 @@ class UserMessageCommandOptionParser(
 			try { it.getMemberByTag(text)?.let { return it.user.identifier } } catch (_: Exception) { }
 		}
 		try { jda.getUserByTag(text)?.let { return it.identifier } } catch (_: Exception) { }
-		throw MessageCommandOptionParser.ParseException("Cannot parse `$text` as `User`.")
+		throw MessageCommandOptionParser.ParseException("Cannot find user `$text`.")
 	}
 
 	private fun parseUser(message: Message, text: String): User {
 		val id = parseUserIdentifier(message, text)
-		return jda.getUser(id) ?: throw MessageCommandOptionParser.ParseException("Cannot parse `$text` as `User`.")
+		return jda.getUser(id) ?: throw MessageCommandOptionParser.ParseException("Cannot find user `$text`.")
 	}
 }
 
@@ -176,12 +176,12 @@ class RoleMessageCommandOptionParser(
 		regex.find(text)?.groups?.get(1)?.value?.let { return RoleIdentifier(it.toLong()) }
 		text.toLongOrNull()?.let { jda.getRoleById(it) }?.let { return it.identifier }
 		(message.channel as? GuildChannel)?.guild?.getRolesByName(text, true)?.singleOrNull()?.let { return it.identifier }
-		throw MessageCommandOptionParser.ParseException("Cannot parse `$text` as `Role`.")
+		throw MessageCommandOptionParser.ParseException("Cannot find role `$text`.")
 	}
 
 	private fun parseRole(message: Message, text: String): Role {
 		val id = parseRoleIdentifier(message, text)
-		return jda.getRole(id) ?: throw MessageCommandOptionParser.ParseException("Cannot parse `$text` as `Role`.")
+		return jda.getRole(id) ?: throw MessageCommandOptionParser.ParseException("Cannot find role `$text`.")
 	}
 }
 
@@ -208,12 +208,12 @@ class TextChannelMessageCommandOptionParser(
 		regex.find(text)?.groups?.get(1)?.value?.let { return TextChannelIdentifier(it.toLong()) }
 		text.toLongOrNull()?.let { jda.getTextChannelById(it) }?.let { return it.identifier }
 		(message.channel as? GuildChannel)?.guild?.getTextChannelsByName(text, true)?.singleOrNull()?.let { return it.identifier }
-		throw MessageCommandOptionParser.ParseException("Cannot parse `$text` as `TextChannel`.")
+		throw MessageCommandOptionParser.ParseException("Cannot find text channel `$text`.")
 	}
 
 	private fun parseTextChannel(message: Message, text: String): TextChannel {
 		val id = parseTextChannelIdentifier(message, text)
-		return jda.getTextChannel(id) ?: throw MessageCommandOptionParser.ParseException("Cannot parse `$text` as `TextChannel`.")
+		return jda.getTextChannel(id) ?: throw MessageCommandOptionParser.ParseException("Cannot find text channel `$text`.")
 	}
 }
 
@@ -237,11 +237,11 @@ class VoiceChannelMessageCommandOptionParser(
 	private fun parseVoiceChannelIdentifier(message: Message, text: String): VoiceChannelIdentifier {
 		text.toLongOrNull()?.let { jda.getVoiceChannelById(it) }?.let { return it.identifier }
 		(message.channel as? GuildChannel)?.guild?.getVoiceChannelsByName(text, true)?.singleOrNull()?.let { return it.identifier }
-		throw MessageCommandOptionParser.ParseException("Cannot parse `$text` as `VoiceChannel`.")
+		throw MessageCommandOptionParser.ParseException("Cannot find voice channel `$text`.")
 	}
 
 	private fun parseVoiceChannel(message: Message, text: String): VoiceChannel {
 		val id = parseVoiceChannelIdentifier(message, text)
-		return jda.getVoiceChannel(id) ?: throw MessageCommandOptionParser.ParseException("Cannot parse `$text` as `VoiceChannel`.")
+		return jda.getVoiceChannel(id) ?: throw MessageCommandOptionParser.ParseException("Cannot find voice channel `$text`.")
 	}
 }
