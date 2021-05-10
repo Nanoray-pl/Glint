@@ -1,9 +1,9 @@
 package pl.nanoray.glint
 
-import com.charleskorn.kaml.Yaml
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.properties.Properties
 import kotlinx.serialization.serializer
+import net.mamoe.yamlkt.Yaml
 import java.io.BufferedInputStream
 import java.io.BufferedOutputStream
 import java.nio.file.Path
@@ -42,7 +42,7 @@ inline fun <reified T: Any> ConfigManager.storeConfig(config: T) {
 	storeConfig(typeOf<T>(), T::class, config)
 }
 
-class ConfigManagerImpl(
+internal class ConfigManagerImpl(
 		private val configPath: Path
 ): ConfigManager {
 	private val jsonFormat = Json {
@@ -50,7 +50,7 @@ class ConfigManagerImpl(
 		prettyPrintIndent = "\t"
 	}
 	private val propertiesFormat = Properties
-	private val yamlFormat = Yaml.default
+	private val yamlFormat = Yaml.Default
 
 	override fun <T: Any> getConfig(type: KType, klass: KClass<T>, name: String): T? {
 		return getYamlConfig(type, name) ?: getJsonConfig(type, name) ?: getPropertiesConfig(type, name)

@@ -8,85 +8,104 @@ import pl.shockah.unikorn.dependency.Resolver
 import pl.shockah.unikorn.dependency.inject
 import java.math.BigDecimal
 import java.math.BigInteger
-import kotlin.reflect.KParameter
+import kotlin.reflect.KType
 
-fun interface MessageCommandOptionParser {
-	fun parseMessageCommandOption(message: Message, parameter: KParameter, text: String): Any?
+interface MessageCommandOptionParser {
+	fun canParseMessageCommandOption(type: KType): Boolean
+	fun parseMessageCommandOption(message: Message, type: KType, text: String): Any?
+}
+
+object UnitMessageCommandOptionParser: MessageCommandOptionParser {
+	override fun canParseMessageCommandOption(type: KType): Boolean {
+		return type in createNullabilityTypeVariants<Unit>()
+	}
+
+	override fun parseMessageCommandOption(message: Message, type: KType, text: String): Any {
+		return Unit
+	}
 }
 
 object BooleanMessageCommandOptionParser: MessageCommandOptionParser {
-	override fun parseMessageCommandOption(message: Message, parameter: KParameter, text: String): Any? {
-		return when (parameter.type) {
-			in createNullabilityTypeVariants<Boolean>() -> when (text.lowercase()) {
-				in listOf("true", "t", "yes", "y", "1") -> true
-				in listOf("false", "f", "no", "n", "0") -> false
-				else -> null
-			}
+	override fun canParseMessageCommandOption(type: KType): Boolean {
+		return type in createNullabilityTypeVariants<Boolean>()
+	}
+
+	override fun parseMessageCommandOption(message: Message, type: KType, text: String): Any? {
+		return when (text.lowercase()) {
+			in listOf("true", "t", "yes", "y", "1") -> true
+			in listOf("false", "f", "no", "n", "0") -> false
 			else -> null
 		}
 	}
 }
 
 object IntMessageCommandOptionParser: MessageCommandOptionParser {
-	override fun parseMessageCommandOption(message: Message, parameter: KParameter, text: String): Any? {
-		return when (parameter.type) {
-			in createNullabilityTypeVariants<Int>() -> text.toIntOrNull()
-			else -> null
-		}
+	override fun canParseMessageCommandOption(type: KType): Boolean {
+		return type in createNullabilityTypeVariants<Int>()
+	}
+
+	override fun parseMessageCommandOption(message: Message, type: KType, text: String): Any? {
+		return text.toIntOrNull()
 	}
 }
 
 object LongMessageCommandOptionParser: MessageCommandOptionParser {
-	override fun parseMessageCommandOption(message: Message, parameter: KParameter, text: String): Any? {
-		return when (parameter.type) {
-			in createNullabilityTypeVariants<Long>() -> text.toLongOrNull()
-			else -> null
-		}
+	override fun canParseMessageCommandOption(type: KType): Boolean {
+		return type in createNullabilityTypeVariants<Long>()
+	}
+
+	override fun parseMessageCommandOption(message: Message, type: KType, text: String): Any? {
+		return text.toLongOrNull()
 	}
 }
 
 object BigIntegerMessageCommandOptionParser: MessageCommandOptionParser {
-	override fun parseMessageCommandOption(message: Message, parameter: KParameter, text: String): Any? {
-		return when (parameter.type) {
-			in createNullabilityTypeVariants<BigInteger>() -> text.toBigIntegerOrNull()
-			else -> null
-		}
+	override fun canParseMessageCommandOption(type: KType): Boolean {
+		return type in createNullabilityTypeVariants<BigInteger>()
+	}
+
+	override fun parseMessageCommandOption(message: Message, type: KType, text: String): Any? {
+		return text.toBigIntegerOrNull()
 	}
 }
 
 object FloatMessageCommandOptionParser: MessageCommandOptionParser {
-	override fun parseMessageCommandOption(message: Message, parameter: KParameter, text: String): Any? {
-		return when (parameter.type) {
-			in createNullabilityTypeVariants<Float>() -> text.toFloatOrNull()
-			else -> null
-		}
+	override fun canParseMessageCommandOption(type: KType): Boolean {
+		return type in createNullabilityTypeVariants<Float>()
+	}
+
+	override fun parseMessageCommandOption(message: Message, type: KType, text: String): Any? {
+		return text.toFloatOrNull()
 	}
 }
 
 object DoubleMessageCommandOptionParser: MessageCommandOptionParser {
-	override fun parseMessageCommandOption(message: Message, parameter: KParameter, text: String): Any? {
-		return when (parameter.type) {
-			in createNullabilityTypeVariants<Double>() -> text.toDoubleOrNull()
-			else -> null
-		}
+	override fun canParseMessageCommandOption(type: KType): Boolean {
+		return type in createNullabilityTypeVariants<Double>()
+	}
+
+	override fun parseMessageCommandOption(message: Message, type: KType, text: String): Any? {
+		return text.toDoubleOrNull()
 	}
 }
 
 object BigDecimalMessageCommandOptionParser: MessageCommandOptionParser {
-	override fun parseMessageCommandOption(message: Message, parameter: KParameter, text: String): Any? {
-		return when (parameter.type) {
-			in createNullabilityTypeVariants<BigDecimal>() -> text.toBigDecimalOrNull()
-			else -> null
-		}
+	override fun canParseMessageCommandOption(type: KType): Boolean {
+		return type in createNullabilityTypeVariants<BigDecimal>()
+	}
+
+	override fun parseMessageCommandOption(message: Message, type: KType, text: String): Any? {
+		return text.toBigDecimalOrNull()
 	}
 }
 
 object StringMessageCommandOptionParser: MessageCommandOptionParser {
-	override fun parseMessageCommandOption(message: Message, parameter: KParameter, text: String): Any? {
-		return when (parameter.type) {
-			in createNullabilityTypeVariants<String>() -> text
-			else -> null
-		}
+	override fun canParseMessageCommandOption(type: KType): Boolean {
+		return type in createNullabilityTypeVariants<String>()
+	}
+
+	override fun parseMessageCommandOption(message: Message, type: KType, text: String): Any? {
+		return text
 	}
 }
 
@@ -97,11 +116,15 @@ class UserMessageCommandOptionParser(
 
 	private val regex = Regex("<@!?(\\d+)>")
 
-	override fun parseMessageCommandOption(message: Message, parameter: KParameter, text: String): Any? {
-		return when (parameter.type) {
+	override fun canParseMessageCommandOption(type: KType): Boolean {
+		return type in createNullabilityTypeVariants<UserIdentifier>() || type in createNullabilityTypeVariants<User>()
+	}
+
+	override fun parseMessageCommandOption(message: Message, type: KType, text: String): Any? {
+		return when (type) {
 			in createNullabilityTypeVariants<UserIdentifier>() -> parseUserIdentifier(message, text)
 			in createNullabilityTypeVariants<User>() -> parseUser(message, text)
-			else -> null
+			else -> throw IllegalArgumentException()
 		}
 	}
 
@@ -129,11 +152,15 @@ class RoleMessageCommandOptionParser(
 
 	private val regex = Regex("<@&(\\d+)>")
 
-	override fun parseMessageCommandOption(message: Message, parameter: KParameter, text: String): Any? {
-		return when (parameter.type) {
+	override fun canParseMessageCommandOption(type: KType): Boolean {
+		return type in createNullabilityTypeVariants<RoleIdentifier>() || type in createNullabilityTypeVariants<Role>()
+	}
+
+	override fun parseMessageCommandOption(message: Message, type: KType, text: String): Any? {
+		return when (type) {
 			in createNullabilityTypeVariants<RoleIdentifier>() -> parseRoleIdentifier(message, text)
 			in createNullabilityTypeVariants<Role>() -> parseRole(message, text)
-			else -> null
+			else -> throw IllegalArgumentException()
 		}
 	}
 
@@ -157,11 +184,15 @@ class TextChannelMessageCommandOptionParser(
 
 	private val regex = Regex("<#(\\d+)>")
 
-	override fun parseMessageCommandOption(message: Message, parameter: KParameter, text: String): Any? {
-		return when (parameter.type) {
+	override fun canParseMessageCommandOption(type: KType): Boolean {
+		return type in createNullabilityTypeVariants<TextChannelIdentifier>() || type in createNullabilityTypeVariants<TextChannel>()
+	}
+
+	override fun parseMessageCommandOption(message: Message, type: KType, text: String): Any? {
+		return when (type) {
 			in createNullabilityTypeVariants<TextChannelIdentifier>() -> parseTextChannelIdentifier(message, text)
 			in createNullabilityTypeVariants<TextChannel>() -> parseTextChannel(message, text)
-			else -> null
+			else -> throw IllegalArgumentException()
 		}
 	}
 
@@ -183,11 +214,15 @@ class VoiceChannelMessageCommandOptionParser(
 ): MessageCommandOptionParser {
 	private val jda: JDA by resolver.inject()
 
-	override fun parseMessageCommandOption(message: Message, parameter: KParameter, text: String): Any? {
-		return when (parameter.type) {
+	override fun canParseMessageCommandOption(type: KType): Boolean {
+		return type in createNullabilityTypeVariants<VoiceChannelIdentifier>() || type in createNullabilityTypeVariants<VoiceChannel>()
+	}
+
+	override fun parseMessageCommandOption(message: Message, type: KType, text: String): Any? {
+		return when (type) {
 			in createNullabilityTypeVariants<VoiceChannelIdentifier>() -> parseVoiceChannelIdentifier(message, text)
 			in createNullabilityTypeVariants<VoiceChannel>() -> parseVoiceChannel(message, text)
-			else -> null
+			else -> throw IllegalArgumentException()
 		}
 	}
 

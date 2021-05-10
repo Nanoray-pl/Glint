@@ -18,7 +18,7 @@ internal class OwnerManagerImpl(
 	private val lock = ReentrantReadWriteLock()
 	private var ownersStorage: Set<UserIdentifier>? = null
 
-	private var owners: Set<UserIdentifier>
+	override var owners: Set<UserIdentifier>
 		get() = lock.read {
 			val owners = ownersStorage
 			if (owners == null) {
@@ -29,7 +29,7 @@ internal class OwnerManagerImpl(
 				return@read owners
 			}
 		}
-		set(value) = lock.write {
+		private set(value) = lock.write {
 			ownersStorage = value
 			configManager.storeConfig(Config(value))
 		}

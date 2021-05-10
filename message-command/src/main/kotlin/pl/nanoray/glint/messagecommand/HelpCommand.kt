@@ -6,10 +6,11 @@ import net.dv8tion.jda.api.entities.User
 import pl.nanoray.glint.command.CommandPredicate
 import pl.shockah.unikorn.dependency.Resolver
 import pl.shockah.unikorn.dependency.inject
+import kotlin.reflect.typeOf
 
-class HelpCommand(
+internal class HelpCommand(
 		resolver: Resolver
-): MessageCommand<HelpCommand.Options>(Options::class) {
+): MessageCommand<HelpCommand.Options>(typeOf<Options>()) {
 	override val name = "help"
 	override val description = "This very command."
 	override val additionalDescription = """
@@ -124,7 +125,7 @@ class HelpCommand(
 		val command = commandChain.last()
 		val result = StringBuilder()
 		result.append(commandChain.joinToString(" ") { it.name })
-		for (option in commandParser.parseCommandHelpEntryOptions(command.optionsKlass)) {
+		for (option in commandParser.parseCommandHelpEntryOptions(command)) {
 			when (option.type) {
 				CommandHelpEntry.Option.Type.Flag -> {
 					val optionNames = listOfNotNull("--${option.name}", option.shorthand?.let { "-$it" })
@@ -144,7 +145,7 @@ class HelpCommand(
 					result.append(" $wrappedFullLine")
 				}
 				CommandHelpEntry.Option.Type.Final -> {
-					val fullLine = option.name
+					val fullLine = "<${option.name}>"
 					val wrappedFullLine = if (option.isOptional) "[$fullLine]" else fullLine
 					result.append(" $wrappedFullLine")
 				}

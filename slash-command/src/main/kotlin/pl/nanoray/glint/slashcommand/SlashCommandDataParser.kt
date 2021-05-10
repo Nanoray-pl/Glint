@@ -15,8 +15,6 @@ import pl.shockah.unikorn.dependency.inject
 import java.math.BigInteger
 import kotlin.reflect.KClass
 import kotlin.reflect.KParameter
-import kotlin.reflect.KType
-import kotlin.reflect.full.createType
 import kotlin.reflect.full.findAnnotation
 import kotlin.reflect.typeOf
 
@@ -65,7 +63,7 @@ fun SlashCommandDataParser.getSlashCommandData(command: SlashCommand): CommandDa
 	}
 }
 
-class SlashCommandDataParserImpl(
+internal class SlashCommandDataParserImpl(
 		resolver: Resolver
 ): SlashCommandDataParser {
 	val jda: JDA by resolver.inject()

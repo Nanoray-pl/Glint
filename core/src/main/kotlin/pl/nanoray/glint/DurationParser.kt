@@ -8,7 +8,7 @@ fun interface DurationParser {
 	fun parseDuration(input: CharSequence): Duration?
 }
 
-class DefaultDurationParser: DurationParser {
+internal class DefaultDurationParser: DurationParser {
 	private val regex = Regex("(-?\\d+(?:\\.\\d+)?)([dhms]|ms)")
 
 	override fun parseDuration(input: CharSequence): Duration? {

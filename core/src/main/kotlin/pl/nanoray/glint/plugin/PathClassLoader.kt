@@ -6,7 +6,7 @@ import kotlin.io.path.exists
 import kotlin.io.path.isRegularFile
 import kotlin.io.path.readBytes
 
-internal class PathClassLoader(
+class PathClassLoader(
 		val paths: List<Path>,
 		parent: ClassLoader? = null
 ): ClassLoader(parent) {

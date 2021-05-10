@@ -4,6 +4,6 @@ import kotlinx.serialization.Serializable
 import pl.nanoray.glint.jdaextensions.UserIdentifier
 
 @Serializable
-data class Config(
+internal data class Config(
 		val owners: Set<UserIdentifier>
 )

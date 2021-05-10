@@ -22,7 +22,7 @@ buildscript {
 }
 
 project.subprojects.each {project ->
-	ext.isPlugin = (["json", "yml", "yaml"].any { new File(project.projectDir, "src/main/resources/plugin.${it}").exists() })
+	project.ext.isPlugin = (["json", "yml", "yaml"].any { new File(project.projectDir, "src/main/resources/plugin.${it}").exists() })
 }
 
 subprojects {
@@ -65,19 +65,14 @@ subprojects {
 	}
 
 	if (project.isPlugin) {
-		def fullName = path.substring(1)
-		def safeFullName = fullName.replace(":", ".")
-
-		task copyTestPlugin() {
+		task copyTestPlugin(type: Copy) {
 			group = 'build'
 			dependsOn 'shadowJar'
 
-			doLast {
-				def source = new File(buildDir, "libs/$project.name-all.jar")
-				def destination = new File(project(':core').projectDir.parentFile, "test/plugins/${safeFullName}.jar")
-				destination.parentFile.mkdirs()
-				Files.copy(source.toPath(), destination.toPath(), StandardCopyOption.REPLACE_EXISTING)
+			from('build/libs') {
+				include "${project.name}-all.jar"
 			}
+			into '../test/plugins'
 		}
 	}
 }

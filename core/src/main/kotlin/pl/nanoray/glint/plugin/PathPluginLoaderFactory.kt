@@ -5,7 +5,7 @@ import pl.shockah.unikorn.plugin.PluginLoaderFactory
 import pl.shockah.unikorn.plugin.impl.ClassLoaderPluginLoader
 import java.nio.file.FileSystems
 
-class PathPluginLoaderFactory: PluginLoaderFactory<PathPluginInfo> {
+internal class PathPluginLoaderFactory: PluginLoaderFactory<PathPluginInfo> {
 	override fun createPluginLoader(pluginInfos: Collection<PathPluginInfo>): PluginLoader<PathPluginInfo> {
 		val classLoaderPaths = pluginInfos.map {
 			val fileSystem = FileSystems.newFileSystem(it.jarPath, null)

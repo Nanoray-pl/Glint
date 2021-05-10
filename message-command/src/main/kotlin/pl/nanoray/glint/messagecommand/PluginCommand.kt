@@ -6,10 +6,11 @@ import pl.nanoray.glint.command.CommandPredicate
 import pl.shockah.unikorn.dependency.Resolver
 import pl.shockah.unikorn.dependency.inject
 import pl.shockah.unikorn.plugin.PluginManager
+import kotlin.reflect.typeOf
 
-class PluginCommand(
+internal class PluginCommand(
 		resolver: Resolver
-): MessageCommand<Unit>(Unit::class) {
+): MessageCommand<Unit>(typeOf<Unit>()) {
 	override val name = "plugin"
 	override val description = "List the current plugins."
 	override val subcommands = listOf(Reload())
@@ -31,7 +32,7 @@ class PluginCommand(
 		).queue()
 	}
 
-	inner class Reload: MessageCommand<Unit>(Unit::class) {
+	inner class Reload: MessageCommand<Unit>(typeOf<Unit>()) {
 		override val name = "reload"
 		override val description = "Reload the plugin list and all plugins."
 

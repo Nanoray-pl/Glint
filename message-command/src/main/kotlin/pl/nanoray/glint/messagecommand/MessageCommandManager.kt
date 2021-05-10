@@ -23,7 +23,7 @@ interface MessageCommandManager {
 	fun handleMessageCommand(message: Message): Boolean
 }
 
-class MessageCommandManagerImpl(
+internal class MessageCommandManagerImpl(
 		resolver: Resolver,
 		private val argumentLineParsers: List<(Message) -> String?>
 ): MessageCommandManager {
@@ -84,7 +84,7 @@ class MessageCommandManagerImpl(
 						return false
 					@Suppress("UNCHECKED_CAST")
 					val anyTypedCommand = command as? MessageCommand<Any> ?: return false
-					val options = commandParser.parseMessageCommandOptions(message, commandNameAndArgumentLine.argumentLine, command.optionsKlass)
+					val options = commandParser.parseMessageCommandOptions(message, commandNameAndArgumentLine.argumentLine, command)
 
 					for (predicate in command.predicates) {
 						if (predicate is CommandPredicate.ChannelUserOptionsContext<*>) {

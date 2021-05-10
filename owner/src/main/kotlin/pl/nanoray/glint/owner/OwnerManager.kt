@@ -5,6 +5,8 @@ import pl.nanoray.glint.jdaextensions.UserIdentifier
 import pl.nanoray.glint.jdaextensions.identifier
 
 interface OwnerManager {
+	val owners: Set<UserIdentifier>
+
 	fun isOwner(user: UserIdentifier): Boolean
 }
 
