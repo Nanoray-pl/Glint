@@ -4,9 +4,9 @@ import io.reactivex.rxjava3.core.Completable
 import net.dv8tion.jda.api.JDA
 import net.dv8tion.jda.api.events.interaction.SlashCommandEvent
 import pl.nanoray.glint.jdaextensions.GuildIdentifier
-import pl.nanoray.glint.jdaextensions.asCompletable
 import pl.nanoray.glint.jdaextensions.getGuild
 import pl.nanoray.glint.jdaextensions.identifier
+import pl.nanoray.glint.jdaextensions.toCompletable
 import pl.shockah.unikorn.dependency.Resolver
 import pl.shockah.unikorn.dependency.inject
 import javax.annotation.CheckReturnValue
@@ -59,7 +59,7 @@ internal class SlashCommandManagerImpl(
 	override fun updateGlobalSlashCommands(): Completable {
 		if (globalCommandsAsGuildCommands)
 			return jda.updateCommands()
-					.asCompletable()
+					.toCompletable()
 
 		val commands = commandProviders.flatMap { it.globalSlashCommands }
 		globalCommands.clear()
@@ -67,7 +67,7 @@ internal class SlashCommandManagerImpl(
 		val commandData = commands.map { slashCommandDataParser.getSlashCommandData(it) }
 		return jda.updateCommands()
 				.addCommands(commandData)
-				.asCompletable()
+				.toCompletable()
 	}
 
 	@CheckReturnValue
@@ -84,18 +84,12 @@ internal class SlashCommandManagerImpl(
 		val commandData = commands.map { slashCommandDataParser.getSlashCommandData(it) }
 		return guildEntity.updateCommands()
 				.addCommands(commandData)
-				.asCompletable()
+				.toCompletable()
 	}
 
 	@CheckReturnValue
 	override fun updateAllSlashCommands(): Completable {
 		return updateGlobalSlashCommands()
-				.andThen(jda.guilds.map { updateGuildSlashCommands(it.identifier) }.let {
-					when (it.size) {
-						0 -> Completable.complete()
-						1 -> it.single()
-						else -> Completable.merge(it)
-					}
-				})
+				.andThen(Completable.merge(jda.guilds.map { updateGuildSlashCommands(it.identifier) }))
 	}
 }

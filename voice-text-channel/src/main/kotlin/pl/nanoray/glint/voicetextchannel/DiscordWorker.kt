@@ -6,10 +6,10 @@ import net.dv8tion.jda.api.Permission
 import net.dv8tion.jda.api.entities.Guild
 import net.dv8tion.jda.api.entities.Member
 import net.dv8tion.jda.api.entities.VoiceChannel
-import pl.nanoray.glint.jdaextensions.asSingle
 import pl.nanoray.glint.jdaextensions.getTextChannel
 import pl.nanoray.glint.jdaextensions.getVoiceChannel
 import pl.nanoray.glint.jdaextensions.identifier
+import pl.nanoray.glint.jdaextensions.toSingle
 import pl.shockah.unikorn.dependency.Resolver
 import pl.shockah.unikorn.dependency.inject
 import javax.annotation.CheckReturnValue
@@ -48,7 +48,7 @@ internal class DiscordWorkerImpl(
 		val textChannel = jda.getTextChannel(mapping.textChannel) ?: throw IllegalArgumentException("Missing text channel ${mapping.textChannel} mapped to voice channel ${mapping.voiceChannel}.")
 		return textChannel.upsertPermissionOverride(member)
 				.grant(Permission.VIEW_CHANNEL)
-				.asSingle()
+				.toSingle()
 				.ignoreElement()
 	}
 
@@ -57,7 +57,7 @@ internal class DiscordWorkerImpl(
 		val textChannel = jda.getTextChannel(mapping.textChannel) ?: throw IllegalArgumentException("Missing text channel ${mapping.textChannel} mapped to voice channel ${mapping.voiceChannel}.")
 		return textChannel.upsertPermissionOverride(member)
 				.clear(Permission.VIEW_CHANNEL)
-				.asSingle()
+				.toSingle()
 				.ignoreElement()
 	}
 
@@ -67,10 +67,6 @@ internal class DiscordWorkerImpl(
 		val completables = mutableListOf<Completable>()
 		channelLeft?.let { voiceTextChannelManager.getMappingForVoiceChannel(it.identifier) }?.let { completables.add(denyAccess(it, guild, member)) }
 		channelJoined?.let { voiceTextChannelManager.getMappingForVoiceChannel(it.identifier) }?.let { completables.add(grantAccess(it, guild, member)) }
-		return when (completables.size) {
-			0 -> Completable.complete()
-			1 -> completables.first()
-			else -> Completable.merge(completables)
-		}
+		return Completable.merge(completables)
 	}
 }
