@@ -53,7 +53,11 @@ internal class VoiceTextCommand(
 		override val additionalDescription = "`voiceChannel` defaults to the voice channel you are currently connected to."
 
 		override fun handleCommand(message: Message, options: LinkOptions) {
-			val voiceChannel = options.voiceChannel ?: (message.channel as? GuildChannel)?.guild?.getMember(message.author)?.voiceState?.channel?.identifier ?: throw IllegalArgumentException("Unknown voice channel.")
+			val voiceChannel = options.voiceChannel ?: (message.channel as? GuildChannel)?.guild?.getMember(message.author)?.voiceState?.channel?.identifier
+			if (voiceChannel == null) {
+				message.reply("Unknown voice channel.").queue()
+				return
+			}
 			val historyDuration = options.historyDuration?.let { durationParser.parseDuration(it) }
 			voiceTextChannelManager.linkTextChannelToVoiceChannel(
 					options.textChannel,

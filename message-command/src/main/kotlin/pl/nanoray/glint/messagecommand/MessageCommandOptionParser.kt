@@ -137,7 +137,7 @@ class UserMessageCommandOptionParser(
 	}
 
 	private fun parseUserIdentifier(message: Message, text: String): UserIdentifier {
-		regex.find(text)?.groups?.get(1)?.value?.let { return UserIdentifier(it.toLong()) }
+		regex.find(text)?.let { return it.groups[1]?.value?.let { UserIdentifier(it.toLong()) } ?: throw MessageCommandOptionParser.ParseException("Cannot find user $text.") }
 		text.toLongOrNull()?.let { jda.getUserById(it) }?.let { return it.identifier }
 		(message.channel as? GuildChannel)?.guild?.let {
 			it.getMembersByName(text, true).singleOrNull()?.let { return it.user.identifier }
@@ -173,7 +173,7 @@ class RoleMessageCommandOptionParser(
 	}
 
 	private fun parseRoleIdentifier(message: Message, text: String): RoleIdentifier {
-		regex.find(text)?.groups?.get(1)?.value?.let { return RoleIdentifier(it.toLong()) }
+		regex.find(text)?.let { return it.groups[1]?.value?.let { RoleIdentifier(it.toLong()) } ?: throw MessageCommandOptionParser.ParseException("Cannot find role $text.") }
 		text.toLongOrNull()?.let { jda.getRoleById(it) }?.let { return it.identifier }
 		(message.channel as? GuildChannel)?.guild?.getRolesByName(text, true)?.singleOrNull()?.let { return it.identifier }
 		throw MessageCommandOptionParser.ParseException("Cannot find role `$text`.")
@@ -205,7 +205,7 @@ class GuildChannelMessageCommandOptionParser(
 	}
 
 	private fun parseGuildChannelIdentifier(message: Message, text: String): GuildChannelIdentifier {
-		regex.find(text)?.groups?.get(1)?.value?.let { return GuildChannelIdentifier(it.toLong()) }
+		regex.find(text)?.let { return it.groups[1]?.value?.let { GuildChannelIdentifier(it.toLong()) } ?: throw MessageCommandOptionParser.ParseException("Cannot find channel $text.") }
 		text.toLongOrNull()?.let { jda.getGuildChannelById(it) }?.let { return it.identifier }
 		(message.channel as? GuildChannel)?.guild?.getTextChannelsByName(text, true)?.singleOrNull()?.let { return it.identifier }
 		(message.channel as? GuildChannel)?.guild?.getVoiceChannelsByName(text, true)?.singleOrNull()?.let { return it.identifier }
@@ -238,7 +238,7 @@ class TextChannelMessageCommandOptionParser(
 	}
 
 	private fun parseTextChannelIdentifier(message: Message, text: String): TextChannelIdentifier {
-		regex.find(text)?.groups?.get(1)?.value?.let { return TextChannelIdentifier(it.toLong()) }
+		regex.find(text)?.let { return it.groups[1]?.value?.let { TextChannelIdentifier(it.toLong()) }?.takeIf { jda.getTextChannel(it) != null } ?: throw MessageCommandOptionParser.ParseException("Cannot find text channel $text.") }
 		text.toLongOrNull()?.let { jda.getTextChannelById(it) }?.let { return it.identifier }
 		(message.channel as? GuildChannel)?.guild?.getTextChannelsByName(text, true)?.singleOrNull()?.let { return it.identifier }
 		throw MessageCommandOptionParser.ParseException("Cannot find text channel `$text`.")
@@ -255,6 +255,8 @@ class VoiceChannelMessageCommandOptionParser(
 ): MessageCommandOptionParser {
 	private val jda: JDA by resolver.inject()
 
+	private val regex = Regex("<#(\\d+)>")
+
 	override fun canParseMessageCommandOption(type: KType): Boolean {
 		return type in createNullabilityTypeVariants<VoiceChannelIdentifier>() || type in createNullabilityTypeVariants<VoiceChannel>()
 	}
@@ -268,6 +270,7 @@ class VoiceChannelMessageCommandOptionParser(
 	}
 
 	private fun parseVoiceChannelIdentifier(message: Message, text: String): VoiceChannelIdentifier {
+		regex.find(text)?.let { return it.groups[1]?.value?.let { VoiceChannelIdentifier(it.toLong()) }?.takeIf { jda.getVoiceChannel(it) != null } ?: throw MessageCommandOptionParser.ParseException("Cannot find voice channel $text.") }
 		text.toLongOrNull()?.let { jda.getVoiceChannelById(it) }?.let { return it.identifier }
 		(message.channel as? GuildChannel)?.guild?.getVoiceChannelsByName(text, true)?.singleOrNull()?.let { return it.identifier }
 		throw MessageCommandOptionParser.ParseException("Cannot find voice channel `$text`.")

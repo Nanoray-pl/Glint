@@ -105,8 +105,6 @@ internal class HelpCommand(
 				for (subcommand in command.subcommands) {
 					if (subcommand.name.equals(nextName, true))
 						return handle(nameChainLeft.drop(1), commandChain + subcommand)
-					else
-						return false
 				}
 				return false
 			}

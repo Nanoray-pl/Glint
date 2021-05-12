@@ -127,33 +127,6 @@ internal class MessageCommandParserImpl(
 		for (optionParser in optionParsers) {
 			if (!optionParser.canParseMessageCommandOption(command.optionsType))
 				continue
-			command::class.findAnnotation<MessageCommand.Option.Named.Flag>()?.let {
-				return listOf(CommandHelpEntry.Option(
-						it.name,
-						it.shorthand.takeIf { it.isNotBlank() },
-						it.description,
-						command.optionsType.isMarkedNullable,
-						CommandHelpEntry.Option.Type.Flag
-				))
-			}
-			command::class.findAnnotation<MessageCommand.Option.Named>()?.let {
-				return listOf(CommandHelpEntry.Option(
-						it.name,
-						it.shorthand.takeIf { it.isNotBlank() },
-						it.description,
-						command.optionsType.isMarkedNullable,
-						CommandHelpEntry.Option.Type.Named
-				))
-			}
-			command::class.findAnnotation<MessageCommand.Option.Positional>()?.let {
-				return listOf(CommandHelpEntry.Option(
-						it.name,
-						null,
-						it.description,
-						command.optionsType.isMarkedNullable,
-						CommandHelpEntry.Option.Type.Positional
-				))
-			}
 			command::class.findAnnotation<MessageCommand.Option.Positional.Final>()?.let {
 				return listOf(CommandHelpEntry.Option(
 						it.name,
@@ -310,8 +283,8 @@ internal class MessageCommandParserImpl(
 					return@mapNotNull it.key to it.value!!
 				}
 			}.toMap()
-			for ((parameter, _) in parameterOptions) {
-				if (!parameter.isOptional)
+			for (parameter in constructor.parameters) {
+				if (!parameter.isOptional && !parameterOptions.containsKey(parameter))
 					continue@constructorLoop
 			}
 
