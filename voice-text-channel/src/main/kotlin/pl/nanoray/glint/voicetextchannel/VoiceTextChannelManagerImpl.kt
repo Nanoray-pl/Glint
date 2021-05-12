@@ -1,12 +1,15 @@
 package pl.nanoray.glint.voicetextchannel
 
 import io.reactivex.rxjava3.core.Completable
+import net.dv8tion.jda.api.JDA
 import pl.nanoray.glint.jdaextensions.TextChannelIdentifier
 import pl.nanoray.glint.jdaextensions.VoiceChannelIdentifier
+import pl.nanoray.glint.jdaextensions.getVoiceChannel
 import pl.nanoray.glint.store.Store
 import pl.nanoray.glint.utilities.WithDefault
 import pl.shockah.unikorn.collection.removeFirst
 import pl.shockah.unikorn.dependency.Resolver
+import pl.shockah.unikorn.dependency.inject
 import java.util.concurrent.locks.ReentrantReadWriteLock
 import javax.annotation.CheckReturnValue
 import kotlin.concurrent.read
@@ -17,6 +20,9 @@ internal class VoiceTextChannelManagerImpl(
 		private val resolver: Resolver,
 		private val store: Store<Set<ChannelMapping>>
 ): WritableVoiceTextChannelManager {
+	private val jda: JDA by resolver.inject()
+	private val discordWorker: DiscordWorker by resolver.inject()
+
 	private val lock = ReentrantReadWriteLock()
 	private val observers = mutableListOf<VoiceTextChannelManagerObserver>()
 
@@ -64,8 +70,8 @@ internal class VoiceTextChannelManagerImpl(
 				)
 				mappings.add(newMapping)
 				observers.forEach { it.onVoiceTextChannelMappingAdded(this, newMapping) }
-				return@write Completable.complete()
-				// TODO: Reset permission overrides
+				val voiceChannelEntity = jda.getVoiceChannel(voiceChannel) ?: return@write Completable.complete()
+				return@write Completable.merge(voiceChannelEntity.members.map { discordWorker.grantAccess(newMapping, voiceChannelEntity.guild, it) })
 			}
 		}
 	}
@@ -75,11 +81,11 @@ internal class VoiceTextChannelManagerImpl(
 		return Completable.defer {
 			lock.write {
 				val mappings = store.value.toMutableSet()
-				val mapping = mappings.removeFirst { it.textChannel == textChannel } ?: return@write Completable.defer { Completable.complete() }
+				val mapping = mappings.removeFirst { it.textChannel == textChannel } ?: return@write Completable.complete()
 				store.value = mappings
 				observers.forEach { it.onVoiceTextChannelMappingRemoved(this, mapping) }
-				return@write Completable.defer { Completable.complete() }
-				// TODO: Reset permission overrides
+				val voiceChannelEntity = jda.getVoiceChannel(mapping.voiceChannel) ?: return@write Completable.complete()
+				return@write Completable.merge(voiceChannelEntity.members.map { discordWorker.denyAccess(mapping, voiceChannelEntity.guild, it) })
 			}
 		}
 	}
@@ -89,11 +95,11 @@ internal class VoiceTextChannelManagerImpl(
 		return Completable.defer {
 			lock.write {
 				val mappings = store.value.toMutableSet()
-				val mapping = mappings.removeFirst { it.voiceChannel == voiceChannel } ?: return@write Completable.defer { Completable.complete() }
+				val mapping = mappings.removeFirst { it.voiceChannel == voiceChannel } ?: return@write Completable.complete()
 				store.value = mappings
 				observers.forEach { it.onVoiceTextChannelMappingRemoved(this, mapping) }
-				return@write Completable.defer { Completable.complete() }
-				// TODO: Reset permission overrides
+				val voiceChannelEntity = jda.getVoiceChannel(mapping.voiceChannel) ?: return@write Completable.complete()
+				return@write Completable.merge(voiceChannelEntity.members.map { discordWorker.denyAccess(mapping, voiceChannelEntity.guild, it) })
 			}
 		}
 	}
