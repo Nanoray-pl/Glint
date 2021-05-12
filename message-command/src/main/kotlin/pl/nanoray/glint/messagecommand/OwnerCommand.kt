@@ -30,7 +30,7 @@ internal class OwnerCommand(
 		).queue()
 	}
 
-	@Option.Final("user", "The user to add as a bot owner.")
+	@Option.Positional.Final("user", "The user to add as a bot owner.")
 	inner class Add: MessageCommand<UserIdentifier>(typeOf<UserIdentifier>()) {
 		override val name = "add"
 		override val description = "Add a bot owner."
@@ -47,7 +47,7 @@ internal class OwnerCommand(
 		}
 	}
 
-	@Option.Final("user", "The user to remove as a bot owner.")
+	@Option.Positional.Final("user", "The user to remove as a bot owner.")
 	inner class Remove: MessageCommand<UserIdentifier>(typeOf<UserIdentifier>()) {
 		override val name = "remove"
 		override val description = "Remove a bot owner."

@@ -1,12 +1,14 @@
 package pl.nanoray.glint.messagecommand
 
 import net.dv8tion.jda.api.entities.Message
+import pl.nanoray.glint.utilities.WordBuffer
 import pl.nanoray.glint.utilities.createNullabilityTypeVariants
 import pl.shockah.unikorn.dependency.Resolver
 import kotlin.reflect.KAnnotatedElement
 import kotlin.reflect.KParameter
 import kotlin.reflect.KType
 import kotlin.reflect.full.findAnnotation
+import kotlin.reflect.typeOf
 
 data class MessageCommandNameAndArgumentLine(
 		val commandName: String,
@@ -17,6 +19,10 @@ interface MessageCommandParser {
 	class MissingRequiredOptionException(
 			val optionName: String
 	): Exception("Missing required option `$optionName`.")
+
+	class MissingOptionValueException(
+			val optionName: String
+	): Exception("Missing value for option `$optionName`.")
 
 	class UnhandledInputException(
 			val input: String
@@ -34,13 +40,6 @@ interface MessageCommandParser {
 internal class MessageCommandParserImpl(
 		resolver: Resolver
 ): MessageCommandParser {
-	private data class OptionParseResult(
-			val name: String,
-			val shorthand: String?,
-			val isFlag: Boolean = false,
-			val shouldParseWhole: Boolean = false
-	)
-
 	private sealed class OptionValue<T> {
 		data class Provided<T>(
 				val value: T
@@ -55,6 +54,10 @@ internal class MessageCommandParserImpl(
 		): OptionValue<T>()
 
 		class Failed<T>: OptionValue<T>()
+	}
+
+	private enum class StringMatchType {
+		Normal, Quoted, TripleQuoted
 	}
 
 	private val optionParsers = mutableListOf(
@@ -82,13 +85,49 @@ internal class MessageCommandParserImpl(
 		optionParsers.remove(optionParser)
 	}
 
+	private fun parseOption(element: KAnnotatedElement, type: KType, isOptional: Boolean): MessageCommand.ParsedOption? {
+		element.findAnnotation<MessageCommand.Option.Named.Flag>()?.let { annotation ->
+			if (type !in createNullabilityTypeVariants<Boolean>())
+				return@let
+			return MessageCommand.ParsedOption.Named.Flag(
+					annotation.name,
+					annotation.shorthand.takeIf { it.isNotBlank() },
+					annotation.description,
+					isOptional
+			)
+		}
+		element.findAnnotation<MessageCommand.Option.Named>()?.let { annotation ->
+			return MessageCommand.ParsedOption.Named(
+					annotation.name,
+					annotation.shorthand.takeIf { it.isNotBlank() },
+					annotation.description,
+					isOptional
+			)
+		}
+		element.findAnnotation<MessageCommand.Option.Positional>()?.let { annotation ->
+			return MessageCommand.ParsedOption.Positional(
+					annotation.name,
+					annotation.description,
+					isOptional
+			)
+		}
+		element.findAnnotation<MessageCommand.Option.Positional.Final>()?.let { annotation ->
+			return MessageCommand.ParsedOption.Positional.Final(
+					annotation.name,
+					annotation.description,
+					isOptional
+			)
+		}
+		return null
+	}
+
 	override fun <T> parseCommandHelpEntryOptions(command: MessageCommand<T>): List<CommandHelpEntry.Option> {
 		if (UnitMessageCommandOptionParser.canParseMessageCommandOption(command.optionsType))
 			return emptyList()
 		for (optionParser in optionParsers) {
 			if (!optionParser.canParseMessageCommandOption(command.optionsType))
 				continue
-			command::class.findAnnotation<MessageCommand.Option.Flag>()?.let {
+			command::class.findAnnotation<MessageCommand.Option.Named.Flag>()?.let {
 				return listOf(CommandHelpEntry.Option(
 						it.name,
 						it.shorthand.takeIf { it.isNotBlank() },
@@ -115,7 +154,7 @@ internal class MessageCommandParserImpl(
 						CommandHelpEntry.Option.Type.Positional
 				))
 			}
-			command::class.findAnnotation<MessageCommand.Option.Final>()?.let {
+			command::class.findAnnotation<MessageCommand.Option.Positional.Final>()?.let {
 				return listOf(CommandHelpEntry.Option(
 						it.name,
 						null,
@@ -129,7 +168,7 @@ internal class MessageCommandParserImpl(
 			val options = mutableListOf<CommandHelpEntry.Option>()
 			parameterLoop@ for (parameter in constructor.parameters) {
 				var foundAnnotation = false
-				parameter.takeIf { !foundAnnotation }?.findAnnotation<MessageCommand.Option.Flag>()?.let {
+				parameter.takeIf { !foundAnnotation }?.findAnnotation<MessageCommand.Option.Named.Flag>()?.let {
 					foundAnnotation = true
 					options.add(CommandHelpEntry.Option(
 							it.name,
@@ -159,7 +198,7 @@ internal class MessageCommandParserImpl(
 							CommandHelpEntry.Option.Type.Positional
 					))
 				}
-				parameter.takeIf { !foundAnnotation }?.findAnnotation<MessageCommand.Option.Final>()?.let {
+				parameter.takeIf { !foundAnnotation }?.findAnnotation<MessageCommand.Option.Positional.Final>()?.let {
 					foundAnnotation = true
 					options.add(CommandHelpEntry.Option(
 							it.name,
@@ -189,141 +228,158 @@ internal class MessageCommandParserImpl(
 	}
 
 	override fun <T> parseMessageCommandOptions(message: Message, argumentLine: String, command: MessageCommand<T>): T {
-		var argumentLineLeft = argumentLine
-
-		fun parseOption(element: KAnnotatedElement, type: KType): OptionParseResult? {
-			element.findAnnotation<MessageCommand.Option.Flag>()?.let { annotation ->
-				if (type !in createNullabilityTypeVariants<Boolean>())
-					return@let
-				return OptionParseResult(
-						annotation.name,
-						annotation.shorthand.takeIf { it.isNotBlank() },
-						isFlag = true
-				)
-			}
-			element.findAnnotation<MessageCommand.Option.Named>()?.let { annotation ->
-				return OptionParseResult(
-						annotation.name,
-						annotation.shorthand.takeIf { it.isNotBlank() }
-				)
-			}
-			element.findAnnotation<MessageCommand.Option.Positional>()?.let { annotation ->
-				return OptionParseResult(
-						annotation.name,
-						null
-				)
-			}
-			element.findAnnotation<MessageCommand.Option.Final>()?.let { annotation ->
-				return OptionParseResult(
-						annotation.name,
-						null,
-						shouldParseWhole = true
-				)
-			}
-			return null
+		if (command.optionsType == typeOf<Unit>()) {
+			@Suppress("UNCHECKED_CAST")
+			return Unit as T
 		}
 
-		fun parseOptionValue(element: KAnnotatedElement, type: KType, isOptional: Boolean): OptionValue<Any?> {
-			if (UnitMessageCommandOptionParser.canParseMessageCommandOption(type))
-				return OptionValue.Provided(Unit)
-			val parseOptionResult = parseOption(element, type) ?: return if (isOptional) OptionValue.Failed() else OptionValue.Failed()
+		val wordBuffer = WordBuffer(argumentLine)
+		val argumentBuffer = run {
+			val argumentWords = mutableListOf<String>()
+			val argumentWhitespace = mutableListOf<String>()
 
-			fun nextString(): String? {
-				if (argumentLineLeft.isEmpty()) {
-					return null
-				} else if (parseOptionResult.shouldParseWhole) {
-					val result = argumentLineLeft.trim()
-					argumentLineLeft = ""
-					return result
+			var matchType: StringMatchType? = null
+			val builder = StringBuilder()
+			while (wordBuffer.pointer < wordBuffer.endPointer) {
+				val whitespace = wordBuffer.pointer.takeIf { it > 0 }?.let { wordBuffer.whitespace[it - 1] }
+				val word = wordBuffer.peekNextWord() ?: break
+				wordBuffer.pointer++
+				if (builder.isEmpty()) {
+					if (whitespace != null)
+						argumentWhitespace.add(whitespace)
+					when {
+						word.startsWith("\"\"\"") -> matchType = StringMatchType.TripleQuoted
+						word.startsWith("\"") -> matchType = StringMatchType.Quoted
+						else -> matchType = StringMatchType.Normal
+					}
 				} else {
-					if (argumentLineLeft[0] == '"' && argumentLineLeft.length >= 2 && argumentLineLeft.count { it == '"' } >= 2) {
-						if (argumentLineLeft[1] == '"') {
-							argumentLineLeft = argumentLineLeft.substring(2).trim()
-							return ""
-						} else {
-							for (i in 2 until argumentLineLeft.length) {
-								if (argumentLineLeft[i] == '"' && argumentLineLeft[i - 1] != '\\') {
-									val result = argumentLineLeft.take(i).drop(1).replace("\\\"", "\"").replace("\\\\", "\\").trim()
-									argumentLineLeft = argumentLineLeft.drop(i + 1).trim()
-									return result
-								}
-							}
-							return null
+					if (whitespace != null)
+						builder.append(whitespace)
+				}
+				builder.append(word)
+				when (matchType) {
+					StringMatchType.TripleQuoted -> {
+						if (word.endsWith("\"\"\"")) {
+							argumentWords += builder.toString().dropLast(3).drop(3)
+							builder.clear()
 						}
-					} else {
-						for (i in 1 until argumentLineLeft.length) {
-							if (argumentLineLeft[i].isWhitespace()) {
-								val result = argumentLineLeft.take(i + 1).trim()
-								argumentLineLeft = argumentLineLeft.drop(i + 1).trim()
-								return result
-							}
+					}
+					StringMatchType.Quoted -> {
+						if (word.endsWith("\"") && !word.endsWith("\\\"")) {
+							argumentWords += builder.toString().dropLast(1).drop(1)
+							builder.clear()
 						}
-						val result = argumentLineLeft.trim()
-						argumentLineLeft = ""
-						return result
+					}
+					StringMatchType.Normal -> {
+						argumentWords += builder.toString()
+						builder.clear()
 					}
 				}
 			}
-
-			if (!parseOptionResult.shouldParseWhole) {
-				val oldArgumentLineLeft = argumentLineLeft
-				val string = nextString()
-				if (string == null) {
-					if (!isOptional)
-						throw MessageCommandParser.MissingRequiredOptionException(parseOptionResult.name)
-					argumentLineLeft = oldArgumentLineLeft
-				} else {
-					var matched = false
-					if (!matched && string == "--${parseOptionResult.name}")
-						matched = true
-					if (!matched && parseOptionResult.shorthand != null && string == "-${parseOptionResult.shorthand}")
-						matched = true
-					if (!matched) {
-						if (!isOptional)
-							throw MessageCommandParser.MissingRequiredOptionException(parseOptionResult.name)
-						argumentLineLeft = oldArgumentLineLeft
-					}
-				}
-			}
-
-			if (parseOptionResult.isFlag) {
-				return OptionValue.Provided(true)
-			}
-
-			val textOption = nextString() ?: return if (isOptional) OptionValue.OptionalNotProvided(parseOptionResult.name) else OptionValue.RequiredNotProvided(parseOptionResult.name)
-			val parsedOption = parseMessageCommandOption(message, type, textOption) ?: return OptionValue.Failed()
-			return OptionValue.Provided(parsedOption)
+			if (builder.isNotEmpty())
+				argumentWords += builder.toString()
+			return@run WordBuffer(argumentWords, argumentWhitespace)
 		}
 
-		for (optionParser in optionParsers) {
-			if (!optionParser.canParseMessageCommandOption(command.optionsType))
-				continue
-			when (val optionValue = parseOptionValue(command::class, command.optionsType, command.optionsType.isMarkedNullable)) {
-				is OptionValue.Provided -> @Suppress("UNCHECKED_CAST") return if (argumentLineLeft.isBlank()) optionValue.value as T else throw MessageCommandParser.UnhandledInputException(argumentLineLeft)
-				is OptionValue.OptionalNotProvided -> {
-					if (command.optionsType.isMarkedNullable) {
-						@Suppress("UNCHECKED_CAST")
-						return null as T
-					} else {
-						throw MessageCommandParser.MissingRequiredOptionException(optionValue.optionName)
-					}
+		parseOption(command::class, command.optionsType, command.optionsType.isMarkedNullable || command.optionsType == typeOf<Unit>())?.let { option ->
+			val optionText = argumentBuffer.readWhole()
+			if (optionText == null) {
+				when {
+					command.optionsType.isMarkedNullable -> @Suppress("UNCHECKED_CAST") return null as T
+					command.optionsType == typeOf<Unit>() -> @Suppress("UNCHECKED_CAST") return Unit as T
+					else -> throw MessageCommandParser.MissingRequiredOptionException(option.name)
 				}
-				is OptionValue.RequiredNotProvided -> throw MessageCommandParser.MissingRequiredOptionException(optionValue.optionName)
-				is OptionValue.Failed -> continue
+			} else {
+				@Suppress("UNCHECKED_CAST")
+				return parseMessageCommandOption(message, command.optionsType, optionText) as? T ?: throw MessageCommandParser.MissingRequiredOptionException(option.name)
 			}
 		}
 
 		constructorLoop@ for (constructor in command.optionsKlass.constructors) {
 			val parameters = mutableMapOf<KParameter, Any?>()
-			parameterLoop@ for (parameter in constructor.parameters) {
-				when (val optionValue = parseOptionValue(parameter, parameter.type, parameter.isOptional)) {
-					is OptionValue.Provided -> parameters[parameter] = optionValue.value
-					is OptionValue.OptionalNotProvided -> { }
-					is OptionValue.Failed -> continue@constructorLoop
+			val parameterOptions = constructor.parameters.associateWith { parseOption(it, it.type, it.isOptional || it.type.isMarkedNullable || it.type == typeOf<Unit>()) }.mapNotNull {
+				if (it.value == null) {
+					if (!it.key.isOptional) {
+						if (it.key.type == typeOf<Unit>())
+							parameters[it.key] = Unit
+						else if (it.key.type.isMarkedNullable)
+							parameters[it.key] = null
+					}
+					return@mapNotNull null
+				} else {
+					return@mapNotNull it.key to it.value!!
+				}
+			}.toMap()
+			for ((parameter, _) in parameterOptions) {
+				if (!parameter.isOptional)
+					continue@constructorLoop
+			}
+
+			val namedParameterOptions = parameterOptions
+					.mapNotNull { (parameter, option) -> (option as? MessageCommand.ParsedOption.Named)?.let { parameter to it } }
+					.toMap()
+			val positionalParameterOptions = parameterOptions
+					.mapNotNull { (parameter, option) -> (option as? MessageCommand.ParsedOption.Positional)?.let { parameter to it } }
+					.sortedWith { (_, lhs), (_, rhs) ->
+						if (lhs is MessageCommand.ParsedOption.Positional.Final != rhs is MessageCommand.ParsedOption.Positional.Final)
+							return@sortedWith if (lhs is MessageCommand.ParsedOption.Positional.Final) 1 else -1
+						return@sortedWith 0
+					}.toMap()
+
+			val handledOptions = mutableSetOf<MessageCommand.ParsedOption>()
+			var finishedHandlingNamedOptions = false
+
+			argumentBufferLoop@ while (argumentBuffer.pointer < argumentBuffer.endPointer) {
+				val word = argumentBuffer.peekNextWord()!!
+				if (!finishedHandlingNamedOptions && word.startsWith("-")) {
+					for ((parameter, option) in namedParameterOptions) {
+						if (handledOptions.contains(option))
+							continue
+						if (word.equals("--${option.name}", true) || (option.shorthand != null && word == "-${option.shorthand}")) {
+							argumentBuffer.pointer++
+							if (option is MessageCommand.ParsedOption.Named.Flag) {
+								parameters[parameter] = true
+							} else {
+								val optionText = argumentBuffer.readNextWord() ?: throw MessageCommandParser.MissingOptionValueException(option.name)
+								for (optionParser in optionParsers) {
+									if (optionParser.canParseMessageCommandOption(parameter.type)) {
+										val optionValue = optionParser.parseMessageCommandOption(message, parameter.type, optionText)
+										parameters[parameter] = optionValue
+									}
+								}
+							}
+							handledOptions.add(option)
+							if (handledOptions.containsAll(namedParameterOptions.values))
+								finishedHandlingNamedOptions = true
+							continue@argumentBufferLoop
+						}
+					}
+				}
+				finishedHandlingNamedOptions = true
+				positionalParameterOptionsLoop@ for ((parameter, option) in positionalParameterOptions) {
+					if (handledOptions.contains(option))
+						continue
+					for (optionParser in optionParsers) {
+						if (optionParser.canParseMessageCommandOption(parameter.type)) {
+							val optionText = if (option is MessageCommand.ParsedOption.Positional.Final) argumentBuffer.readWhole()!! else word
+							val optionValue = optionParser.parseMessageCommandOption(message, parameter.type, optionText)
+							parameters[parameter] = optionValue
+							if (option !is MessageCommand.ParsedOption.Positional.Final)
+								argumentBuffer.pointer++
+							handledOptions.add(option)
+							continue@argumentBufferLoop
+						}
+					}
+					if (!option.isOptional)
+						throw MessageCommandParser.MissingRequiredOptionException(option.name)
 				}
 			}
-			if (argumentLineLeft.isNotBlank())
-				throw MessageCommandParser.UnhandledInputException(argumentLineLeft)
+			if (argumentBuffer.pointer != argumentBuffer.endPointer)
+				throw MessageCommandParser.UnhandledInputException(argumentBuffer.readWhole()!!)
+			for (option in parameterOptions.values) {
+				if (!option.isOptional && option !in handledOptions)
+					throw MessageCommandParser.MissingRequiredOptionException(option.name)
+			}
 			try {
 				@Suppress("UNCHECKED_CAST")
 				return constructor.callBy(parameters) as T

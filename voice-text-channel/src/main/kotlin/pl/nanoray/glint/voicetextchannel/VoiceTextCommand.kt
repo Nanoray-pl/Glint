@@ -42,9 +42,9 @@ internal class VoiceTextCommand(
 	}
 
 	data class LinkOptions(
-			@Option.Named("voiceChannel", "v", "Voice channel to link to.") val voiceChannel: VoiceChannelIdentifier? = null,
-			@Option.Named("textChannel", "t", "Text channel to link.") val textChannel: TextChannelIdentifier,
-			@Option.Named("historyDuration", "d", "Duration to keep the messages for.") val historyDuration: String? = null
+			@Option.Named("historyDuration", "d", "Duration to keep the messages for.") val historyDuration: String? = null,
+			@Option.Positional("textChannel", "Text channel to link.") val textChannel: TextChannelIdentifier,
+			@Option.Positional("voiceChannel", "Voice channel to link to.") val voiceChannel: VoiceChannelIdentifier? = null
 	)
 
 	inner class Link: MessageCommand<LinkOptions>(typeOf<LinkOptions>()) {
@@ -60,18 +60,14 @@ internal class VoiceTextCommand(
 					voiceChannel,
 					WithDefault.NonDefault(historyDuration ?: VoiceTextChannelDefaults.historyDuration)
 			).subscribe(
-					{
-						message.addReaction("\uD83D\uDC4D").queue()
-					},
-					{
-						message.reply("There was an error: ${it.message}")
-					}
+					{ message.addReaction("\uD83D\uDC4D").queue() },
+					{ message.reply("There was an error: ${it.message}") }
 			)
 		}
 	}
 
 	data class UnlinkOptions(
-			@Option.Final("channel", "Text/voice channel to unlink.") val channel: GuildChannel? = null
+			@Option.Positional.Final("channel", "Text/voice channel to unlink.") val channel: GuildChannel? = null
 	)
 
 	inner class Unlink: MessageCommand<UnlinkOptions>(typeOf<UnlinkOptions>()) {
@@ -81,13 +77,15 @@ internal class VoiceTextCommand(
 		override fun handleCommand(message: Message, options: UnlinkOptions) {
 			when (val channel = options.channel ?: (message.channel as? GuildChannel)?.guild?.getMember(message.author)?.voiceState?.channel) {
 				is VoiceChannel -> voiceTextChannelManager.unlinkVoiceChannelFromTextChannel(channel.identifier)
-						.andThen { message.addReaction("\uD83D\uDC4D").asSingle().ignoreElement() }
-						.onErrorResumeNext { message.reply("There was an error: ${it.message}.").asSingle().ignoreElement() }
-						.subscribe()
+						.subscribe(
+								{ message.addReaction("\uD83D\uDC4D").queue() },
+								{ message.reply("There was an error: ${it.message}.").queue() }
+						)
 				is TextChannel -> voiceTextChannelManager.unlinkTextChannelFromVoiceChannel(channel.identifier)
-						.andThen { message.addReaction("\uD83D\uDC4D").asSingle().ignoreElement() }
-						.onErrorResumeNext { message.reply("There was an error: ${it.message}.").asSingle().ignoreElement() }
-						.subscribe()
+						.subscribe(
+								{ message.addReaction("\uD83D\uDC4D").queue() },
+								{ message.reply("There was an error: ${it.message}.").queue() }
+						)
 				else -> message.reply("`channel` must be a text or voice channel.").queue()
 			}
 		}

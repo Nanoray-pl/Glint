@@ -19,7 +19,7 @@ internal class HelpCommand(
 	""".trimIndent()
 
 	data class Options(
-			@Option.Final("command", "The command to show information about.") val commandName: String? = null
+			@Option.Positional.Final("command", "The command to show information about.") val commandName: String? = null
 	)
 
 	private val commandManager: MessageCommandManager by resolver.inject()

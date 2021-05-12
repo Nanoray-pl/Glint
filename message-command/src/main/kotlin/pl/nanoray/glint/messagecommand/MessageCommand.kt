@@ -21,33 +21,65 @@ abstract class MessageCommand<Options>(
 
 	object Option {
 		@Retention(AnnotationRetention.RUNTIME)
-		@Target(AnnotationTarget.VALUE_PARAMETER, AnnotationTarget.CLASS)
-		annotation class Flag(
-				val name: String = "",
-				val shorthand: String = "",
-				val description: String
-		)
-
-		@Retention(AnnotationRetention.RUNTIME)
-		@Target(AnnotationTarget.VALUE_PARAMETER, AnnotationTarget.CLASS)
+		@Target(AnnotationTarget.VALUE_PARAMETER)
 		annotation class Named(
 				val name: String = "",
 				val shorthand: String = "",
 				val description: String
-		)
+		) {
+			@Retention(AnnotationRetention.RUNTIME)
+			@Target(AnnotationTarget.VALUE_PARAMETER)
+			annotation class Flag(
+					val name: String = "",
+					val shorthand: String = "",
+					val description: String
+			)
+		}
 
 		@Retention(AnnotationRetention.RUNTIME)
-		@Target(AnnotationTarget.VALUE_PARAMETER, AnnotationTarget.CLASS)
+		@Target(AnnotationTarget.VALUE_PARAMETER)
 		annotation class Positional(
 				val name: String = "",
 				val description: String
-		)
+		) {
+			@Retention(AnnotationRetention.RUNTIME)
+			@Target(AnnotationTarget.VALUE_PARAMETER, AnnotationTarget.CLASS)
+			annotation class Final(
+					val name: String = "",
+					val description: String
+			)
+		}
+	}
 
-		@Retention(AnnotationRetention.RUNTIME)
-		@Target(AnnotationTarget.VALUE_PARAMETER, AnnotationTarget.CLASS)
-		annotation class Final(
-				val name: String = "",
-				val description: String
-		)
+	sealed class ParsedOption(
+			val name: String,
+			val description: String,
+			val isOptional: Boolean
+	) {
+		open class Named(
+				name: String,
+				val shorthand: String? = null,
+				description: String,
+				isOptional: Boolean
+		): ParsedOption(name, description, isOptional) {
+			class Flag(
+					name: String,
+					shorthand: String? = null,
+					description: String,
+					isOptional: Boolean
+			): Named(name, shorthand, description, isOptional)
+		}
+
+		open class Positional(
+				name: String,
+				description: String,
+				isOptional: Boolean
+		): ParsedOption(name, description, isOptional) {
+			class Final(
+					name: String,
+					description: String,
+					isOptional: Boolean
+			): Positional(name, description, isOptional)
+		}
 	}
 }

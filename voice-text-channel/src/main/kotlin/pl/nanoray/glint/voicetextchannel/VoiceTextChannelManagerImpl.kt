@@ -75,10 +75,10 @@ internal class VoiceTextChannelManagerImpl(
 		return Completable.defer {
 			lock.write {
 				val mappings = store.value.toMutableSet()
-				val mapping = mappings.removeFirst { it.textChannel == textChannel } ?: return@write Completable.complete()
+				val mapping = mappings.removeFirst { it.textChannel == textChannel } ?: return@write Completable.defer { Completable.complete() }
 				store.value = mappings
 				observers.forEach { it.onVoiceTextChannelMappingRemoved(this, mapping) }
-				return@write Completable.complete()
+				return@write Completable.defer { Completable.complete() }
 				// TODO: Reset permission overrides
 			}
 		}
@@ -89,10 +89,10 @@ internal class VoiceTextChannelManagerImpl(
 		return Completable.defer {
 			lock.write {
 				val mappings = store.value.toMutableSet()
-				val mapping = mappings.removeFirst { it.voiceChannel == voiceChannel } ?: return@write Completable.complete()
+				val mapping = mappings.removeFirst { it.voiceChannel == voiceChannel } ?: return@write Completable.defer { Completable.complete() }
 				store.value = mappings
 				observers.forEach { it.onVoiceTextChannelMappingRemoved(this, mapping) }
-				return@write Completable.complete()
+				return@write Completable.defer { Completable.complete() }
 				// TODO: Reset permission overrides
 			}
 		}
