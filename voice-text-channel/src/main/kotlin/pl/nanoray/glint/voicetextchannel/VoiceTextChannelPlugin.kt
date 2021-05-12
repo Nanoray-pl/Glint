@@ -21,6 +21,7 @@ class VoiceTextChannelPlugin(
 	private val storePlugin: StorePlugin by resolver.inject()
 
 	private val pluginContainer = Container(resolver)
+	private val discordWorker: DiscordWorker by pluginContainer.inject()
 	private val eventListener by lazy { DiscordEventListener(pluginContainer) }
 
 	private val command = VoiceTextCommand(resolver)
@@ -35,6 +36,9 @@ class VoiceTextChannelPlugin(
 		jda.addEventListener(eventListener)
 		messageCommandManager.registerMessageCommand(command)
 		storePlugin.registerThrottleStore(mappingStore)
+
+		if (jda.status == JDA.Status.CONNECTED)
+			discordWorker.cleanUpStaleVoiceTextChannelMappings().subscribe()
 	}
 
 	override fun onUnload() {

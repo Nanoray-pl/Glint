@@ -21,7 +21,7 @@ internal class VoiceTextChannelManagerImpl(
 	private val observers = mutableListOf<VoiceTextChannelManagerObserver>()
 
 	override val voiceTextChannelMappings: Set<ChannelMapping>
-		get() = lock.read { store.value }
+		get() = lock.read { store.value.toSet() }
 
 	override fun addVoiceTextChannelObserver(observer: VoiceTextChannelManagerObserver) {
 		lock.write { observers.add(observer) }

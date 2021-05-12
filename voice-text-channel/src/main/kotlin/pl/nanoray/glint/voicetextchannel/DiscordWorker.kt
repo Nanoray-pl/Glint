@@ -8,12 +8,14 @@ import net.dv8tion.jda.api.entities.Member
 import net.dv8tion.jda.api.entities.VoiceChannel
 import pl.nanoray.glint.jdaextensions.asSingle
 import pl.nanoray.glint.jdaextensions.getTextChannel
+import pl.nanoray.glint.jdaextensions.getVoiceChannel
 import pl.nanoray.glint.jdaextensions.identifier
 import pl.shockah.unikorn.dependency.Resolver
 import pl.shockah.unikorn.dependency.inject
 import javax.annotation.CheckReturnValue
 
 internal interface DiscordWorker {
+	@CheckReturnValue fun cleanUpStaleVoiceTextChannelMappings(): Completable
 	@CheckReturnValue fun grantAccess(mapping: ChannelMapping, guild: Guild, member: Member): Completable
 	@CheckReturnValue fun denyAccess(mapping: ChannelMapping, guild: Guild, member: Member): Completable
 	@CheckReturnValue fun updateAccess(channelLeft: VoiceChannel?, channelJoined: VoiceChannel?, guild: Guild, member: Member): Completable
@@ -23,7 +25,23 @@ internal class DiscordWorkerImpl(
 		resolver: Resolver
 ): DiscordWorker {
 	private val jda: JDA by resolver.inject()
-	private val voiceTextChannelManager: VoiceTextChannelManager by resolver.inject()
+	private val voiceTextChannelManager: WritableVoiceTextChannelManager by resolver.inject()
+
+	@CheckReturnValue
+	override fun cleanUpStaleVoiceTextChannelMappings(): Completable {
+		val completables = mutableListOf<Completable>()
+		for (mapping in voiceTextChannelManager.voiceTextChannelMappings) {
+			if (jda.getVoiceChannel(mapping.voiceChannel) == null) {
+				completables += voiceTextChannelManager.unlinkVoiceChannelFromTextChannel(mapping.voiceChannel)
+				continue
+			}
+			if (jda.getTextChannel(mapping.textChannel) == null) {
+				completables += voiceTextChannelManager.unlinkTextChannelFromVoiceChannel(mapping.textChannel)
+				continue
+			}
+		}
+		return Completable.merge(completables)
+	}
 
 	@CheckReturnValue
 	override fun grantAccess(mapping: ChannelMapping, guild: Guild, member: Member): Completable {
