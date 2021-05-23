@@ -11,7 +11,7 @@ import kotlin.concurrent.read
 import kotlin.concurrent.write
 
 internal class OwnerManagerImpl(
-		resolver: Resolver
+	resolver: Resolver
 ): WritableOwnerManager {
 	private val configManager: ConfigManager by resolver.inject()
 

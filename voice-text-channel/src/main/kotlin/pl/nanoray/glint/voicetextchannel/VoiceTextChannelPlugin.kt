@@ -13,7 +13,7 @@ import pl.shockah.unikorn.dependency.inject
 import pl.shockah.unikorn.dependency.register
 
 class VoiceTextChannelPlugin(
-		container: Container
+	container: Container
 ): ContainerEnabledPlugin(container) {
 	private val jda: JDA by resolver.inject()
 	private val durationParser: DurationParser by resolver.inject()
@@ -26,8 +26,8 @@ class VoiceTextChannelPlugin(
 
 	private val command = VoiceTextCommand(resolver)
 	private val mappingStore = ConfigStore<Set<ChannelMapping>>(resolver, "${this::class.qualifiedName!!}.mappings")
-			.replacingNull(emptySet())
-			.throttling(15_000)
+		.replacingNull(emptySet())
+		.throttling(15_000)
 
 	init {
 		register<WritableVoiceTextChannelManager> { VoiceTextChannelManagerImpl(it, mappingStore) }

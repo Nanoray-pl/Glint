@@ -7,7 +7,7 @@ import pl.shockah.unikorn.dependency.Resolver
 import pl.shockah.unikorn.dependency.inject
 
 internal class DiscordEventListener(
-		resolver: Resolver
+	resolver: Resolver
 ): ListenerAdapter() {
 	private val jda: JDA by resolver.inject()
 	private val messageCommandManager: MessageCommandManager by resolver.inject()

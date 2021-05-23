@@ -9,7 +9,7 @@ import kotlin.concurrent.withLock
 
 interface MessageCommandManager {
 	class DeniedCommandException(
-			val reason: String
+		val reason: String
 	): Exception(reason)
 
 	val messageCommands: List<MessageCommand<*>>
@@ -24,14 +24,14 @@ interface MessageCommandManager {
 }
 
 internal class MessageCommandManagerImpl(
-		resolver: Resolver,
-		private val argumentLineParsers: List<(Message) -> String?>
+	resolver: Resolver,
+	private val argumentLineParsers: List<(Message) -> String?>
 ): MessageCommandManager {
 	companion object {
 		operator fun invoke(resolver: Resolver, prefixes: List<String>): MessageCommandManagerImpl {
 			return MessageCommandManagerImpl(
-					resolver,
-					prefixes.map { prefix ->  { message -> message.contentRaw.takeIf { it.startsWith(prefix) }?.drop(prefix.length)?.trim() } }
+				resolver,
+				prefixes.map { prefix ->  { message -> message.contentRaw.takeIf { it.startsWith(prefix) }?.drop(prefix.length)?.trim() } }
 			)
 		}
 	}

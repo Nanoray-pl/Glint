@@ -8,7 +8,7 @@ import java.nio.file.FileSystems
 internal class PathPluginLoaderFactory: PluginLoaderFactory<PathPluginInfo> {
 	override fun createPluginLoader(pluginInfos: Collection<PathPluginInfo>): PluginLoader<PathPluginInfo> {
 		val classLoaderPaths = pluginInfos.map {
-			val fileSystem = FileSystems.newFileSystem(it.jarPath, null)
+			val fileSystem = FileSystems.newFileSystem(it.jarPath, null as ClassLoader?)
 			return@map fileSystem.rootDirectories.single()
 		}
 		val classLoader = PathClassLoader(classLoaderPaths, Thread.currentThread().contextClassLoader)

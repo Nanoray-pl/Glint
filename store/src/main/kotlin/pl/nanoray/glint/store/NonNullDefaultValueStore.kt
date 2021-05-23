@@ -1,12 +1,12 @@
 package pl.nanoray.glint.store
 
 class NonNullDefaultValueStore<T: Any>(
-		private val wrapped: Store<T?>,
-		private val defaultValueSupplier: () -> T
+	private val wrapped: Store<T?>,
+	private val defaultValueSupplier: () -> T
 ): Store<T> {
 	constructor(
-			wrapped: Store<T?>,
-			defaultValue: T
+		wrapped: Store<T?>,
+		defaultValue: T
 	): this(wrapped, defaultValueSupplier = { defaultValue })
 
 	override var value: T

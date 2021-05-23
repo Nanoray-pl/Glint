@@ -1,9 +1,13 @@
 package pl.nanoray.glint.http
 
+import java.net.URL
+
 data class HttpResponse(
-		val statusCode: Int,
-		val headers: Map<String, String>,
-		val data: ByteArray
+	val method: HttpRequest.Method,
+	val url: URL,
+	val statusCode: Int,
+	val headers: Map<String, String>,
+	val data: ByteArray
 ) {
 	override fun equals(other: Any?): Boolean {
 		if (this === other) return true

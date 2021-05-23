@@ -15,7 +15,7 @@ import kotlin.io.path.extension
 import kotlin.io.path.isRegularFile
 
 internal class PathPluginInfoProvider(
-		private val pluginPath: Path
+	private val pluginPath: Path
 ): PluginInfoProvider<PathPluginInfo> {
 	class MissingPluginDefinitionException: Exception()
 
@@ -28,8 +28,8 @@ internal class PathPluginInfoProvider(
 
 		ZipInputStream(BufferedInputStream(Files.newInputStream(jarPath))).use { zip ->
 			val handlers: List<Pair<List<String>, (String) -> FilePluginInfo.Base?>> = listOf(
-					listOf("yml", "yaml") to { Yaml.Default.decodeFromString(it) },
-					listOf("json") to { Json.Default.decodeFromString(it) }
+				listOf("yml", "yaml") to { Yaml.Default.decodeFromString(it) },
+				listOf("json") to { Json.Default.decodeFromString(it) }
 			)
 			while (true) {
 				val zipEntry = zip.nextEntry ?: throw MissingPluginDefinitionException()
@@ -47,11 +47,11 @@ internal class PathPluginInfoProvider(
 
 	private fun readPluginInfo(basePluginInfo: FilePluginInfo.Base, jarPath: Path): PathPluginInfo {
 		return PathPluginInfo(
-				basePluginInfo.identifier,
-				basePluginInfo.version,
-				basePluginInfo.dependencies,
-				jarPath,
-				basePluginInfo.pluginClassName
+			basePluginInfo.identifier,
+			basePluginInfo.version,
+			basePluginInfo.dependencies,
+			jarPath,
+			basePluginInfo.pluginClassName
 		)
 	}
 }

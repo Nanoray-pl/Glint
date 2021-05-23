@@ -24,9 +24,9 @@ interface VoiceTextChannelManager {
 
 interface WritableVoiceTextChannelManager: VoiceTextChannelManager {
 	@CheckReturnValue fun linkTextChannelToVoiceChannel(
-			textChannel: TextChannelIdentifier,
-			voiceChannel: VoiceChannelIdentifier,
-			duration: WithDefault<Duration>
+		textChannel: TextChannelIdentifier,
+		voiceChannel: VoiceChannelIdentifier,
+		duration: WithDefault<Duration>
 	): Completable
 
 	@CheckReturnValue fun unlinkTextChannelFromVoiceChannel(textChannel: TextChannelIdentifier): Completable

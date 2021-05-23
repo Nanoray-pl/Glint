@@ -3,8 +3,8 @@ package pl.nanoray.glint.utilities
 import kotlin.properties.Delegates
 
 class WordBuffer(
-		val words: List<String>,
-		val whitespace: List<String>
+	val words: List<String>,
+	val whitespace: List<String>
 ) {
 	companion object {
 		operator fun invoke(text: String, whitespacePredicate: (Int) -> Boolean = { Character.isWhitespace(it) }): WordBuffer {

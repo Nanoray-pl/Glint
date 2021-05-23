@@ -11,7 +11,7 @@ import pl.shockah.unikorn.dependency.register
 import pl.shockah.unikorn.dependency.resolve
 
 class MessageCommandPlugin(
-		container: Container
+	container: Container
 ): ContainerEnabledPlugin(container) {
 	private val jda: JDA by resolver.inject()
 	private val commandManager: MessageCommandManager by resolver.inject()

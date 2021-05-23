@@ -11,21 +11,21 @@ import kotlin.reflect.full.findAnnotation
 import kotlin.reflect.typeOf
 
 data class MessageCommandNameAndArgumentLine(
-		val commandName: String,
-		val argumentLine: String
+	val commandName: String,
+	val argumentLine: String
 )
 
 interface MessageCommandParser {
 	class MissingRequiredOptionException(
-			val optionName: String
+		val optionName: String
 	): Exception("Missing required option `$optionName`.")
 
 	class MissingOptionValueException(
-			val optionName: String
+		val optionName: String
 	): Exception("Missing value for option `$optionName`.")
 
 	class UnhandledInputException(
-			val input: String
+		val input: String
 	): Exception("Unhandled command input: `$input`.")
 
 	fun registerOptionParser(optionParser: MessageCommandOptionParser)
@@ -38,19 +38,19 @@ interface MessageCommandParser {
 }
 
 internal class MessageCommandParserImpl(
-		resolver: Resolver
+	resolver: Resolver
 ): MessageCommandParser {
 	private sealed class OptionValue<T> {
 		data class Provided<T>(
-				val value: T
+			val value: T
 		): OptionValue<T>()
 
 		data class OptionalNotProvided<T>(
-				val optionName: String
+			val optionName: String
 		): OptionValue<T>()
 
 		data class RequiredNotProvided<T>(
-				val optionName: String
+			val optionName: String
 		): OptionValue<T>()
 
 		class Failed<T>: OptionValue<T>()
@@ -61,20 +61,20 @@ internal class MessageCommandParserImpl(
 	}
 
 	private val optionParsers = mutableListOf(
-			UnitMessageCommandOptionParser,
-			BooleanMessageCommandOptionParser,
-			IntMessageCommandOptionParser,
-			LongMessageCommandOptionParser,
-			BigIntegerMessageCommandOptionParser,
-			FloatMessageCommandOptionParser,
-			DoubleMessageCommandOptionParser,
-			BigDecimalMessageCommandOptionParser,
-			StringMessageCommandOptionParser,
-			UserMessageCommandOptionParser(resolver),
-			RoleMessageCommandOptionParser(resolver),
-			GuildChannelMessageCommandOptionParser(resolver),
-			TextChannelMessageCommandOptionParser(resolver),
-			VoiceChannelMessageCommandOptionParser(resolver)
+		UnitMessageCommandOptionParser,
+		BooleanMessageCommandOptionParser,
+		IntMessageCommandOptionParser,
+		LongMessageCommandOptionParser,
+		BigIntegerMessageCommandOptionParser,
+		FloatMessageCommandOptionParser,
+		DoubleMessageCommandOptionParser,
+		BigDecimalMessageCommandOptionParser,
+		StringMessageCommandOptionParser,
+		UserMessageCommandOptionParser(resolver),
+		RoleMessageCommandOptionParser(resolver),
+		GuildChannelMessageCommandOptionParser(resolver),
+		TextChannelMessageCommandOptionParser(resolver),
+		VoiceChannelMessageCommandOptionParser(resolver)
 	)
 
 	override fun registerOptionParser(optionParser: MessageCommandOptionParser) {
@@ -90,32 +90,32 @@ internal class MessageCommandParserImpl(
 			if (type !in createNullabilityTypeVariants<Boolean>())
 				return@let
 			return MessageCommand.ParsedOption.Named.Flag(
-					annotation.name,
-					annotation.shorthand.takeIf { it.isNotBlank() },
-					annotation.description,
-					isOptional
+				annotation.name,
+				annotation.shorthand.takeIf { it.isNotBlank() },
+				annotation.description,
+				isOptional
 			)
 		}
 		element.findAnnotation<MessageCommand.Option.Named>()?.let { annotation ->
 			return MessageCommand.ParsedOption.Named(
-					annotation.name,
-					annotation.shorthand.takeIf { it.isNotBlank() },
-					annotation.description,
-					isOptional
+				annotation.name,
+				annotation.shorthand.takeIf { it.isNotBlank() },
+				annotation.description,
+				isOptional
 			)
 		}
 		element.findAnnotation<MessageCommand.Option.Positional>()?.let { annotation ->
 			return MessageCommand.ParsedOption.Positional(
-					annotation.name,
-					annotation.description,
-					isOptional
+				annotation.name,
+				annotation.description,
+				isOptional
 			)
 		}
 		element.findAnnotation<MessageCommand.Option.Positional.Final>()?.let { annotation ->
 			return MessageCommand.ParsedOption.Positional.Final(
-					annotation.name,
-					annotation.description,
-					isOptional
+				annotation.name,
+				annotation.description,
+				isOptional
 			)
 		}
 		return null
@@ -129,11 +129,11 @@ internal class MessageCommandParserImpl(
 				continue
 			command::class.findAnnotation<MessageCommand.Option.Positional.Final>()?.let {
 				return listOf(CommandHelpEntry.Option(
-						it.name,
-						null,
-						it.description,
-						command.optionsType.isMarkedNullable,
-						CommandHelpEntry.Option.Type.Final
+					it.name,
+					null,
+					it.description,
+					command.optionsType.isMarkedNullable,
+					CommandHelpEntry.Option.Type.Final
 				))
 			}
 		}
@@ -144,41 +144,41 @@ internal class MessageCommandParserImpl(
 				parameter.takeIf { !foundAnnotation }?.findAnnotation<MessageCommand.Option.Named.Flag>()?.let {
 					foundAnnotation = true
 					options.add(CommandHelpEntry.Option(
-							it.name,
-							it.shorthand.takeIf { it.isNotBlank() },
-							it.description,
-							parameter.isOptional,
-							CommandHelpEntry.Option.Type.Flag
+						it.name,
+						it.shorthand.takeIf { it.isNotBlank() },
+						it.description,
+						parameter.isOptional,
+						CommandHelpEntry.Option.Type.Flag
 					))
 				}
 				parameter.takeIf { !foundAnnotation }?.findAnnotation<MessageCommand.Option.Named>()?.let {
 					foundAnnotation = true
 					options.add(CommandHelpEntry.Option(
-							it.name,
-							it.shorthand.takeIf { it.isNotBlank() },
-							it.description,
-							parameter.isOptional,
-							CommandHelpEntry.Option.Type.Named
+						it.name,
+						it.shorthand.takeIf { it.isNotBlank() },
+						it.description,
+						parameter.isOptional,
+						CommandHelpEntry.Option.Type.Named
 					))
 				}
 				parameter.takeIf { !foundAnnotation }?.findAnnotation<MessageCommand.Option.Positional>()?.let {
 					foundAnnotation = true
 					options.add(CommandHelpEntry.Option(
-							it.name,
-							null,
-							it.description,
-							parameter.isOptional,
-							CommandHelpEntry.Option.Type.Positional
+						it.name,
+						null,
+						it.description,
+						parameter.isOptional,
+						CommandHelpEntry.Option.Type.Positional
 					))
 				}
 				parameter.takeIf { !foundAnnotation }?.findAnnotation<MessageCommand.Option.Positional.Final>()?.let {
 					foundAnnotation = true
 					options.add(CommandHelpEntry.Option(
-							it.name,
-							null,
-							it.description,
-							parameter.isOptional,
-							CommandHelpEntry.Option.Type.Final
+						it.name,
+						null,
+						it.description,
+						parameter.isOptional,
+						CommandHelpEntry.Option.Type.Final
 					))
 				}
 				if (!foundAnnotation && !parameter.isOptional)
@@ -220,10 +220,10 @@ internal class MessageCommandParserImpl(
 				if (builder.isEmpty()) {
 					if (whitespace != null)
 						argumentWhitespace.add(whitespace)
-					when {
-						word.startsWith("\"\"\"") -> matchType = StringMatchType.TripleQuoted
-						word.startsWith("\"") -> matchType = StringMatchType.Quoted
-						else -> matchType = StringMatchType.Normal
+					matchType = when {
+						word.startsWith("\"\"\"") -> StringMatchType.TripleQuoted
+						word.startsWith("\"") -> StringMatchType.Quoted
+						else -> StringMatchType.Normal
 					}
 				} else {
 					if (whitespace != null)
@@ -289,15 +289,15 @@ internal class MessageCommandParserImpl(
 			}
 
 			val namedParameterOptions = parameterOptions
-					.mapNotNull { (parameter, option) -> (option as? MessageCommand.ParsedOption.Named)?.let { parameter to it } }
-					.toMap()
+				.mapNotNull { (parameter, option) -> (option as? MessageCommand.ParsedOption.Named)?.let { parameter to it } }
+				.toMap()
 			val positionalParameterOptions = parameterOptions
-					.mapNotNull { (parameter, option) -> (option as? MessageCommand.ParsedOption.Positional)?.let { parameter to it } }
-					.sortedWith { (_, lhs), (_, rhs) ->
-						if (lhs is MessageCommand.ParsedOption.Positional.Final != rhs is MessageCommand.ParsedOption.Positional.Final)
-							return@sortedWith if (lhs is MessageCommand.ParsedOption.Positional.Final) 1 else -1
-						return@sortedWith 0
-					}.toMap()
+				.mapNotNull { (parameter, option) -> (option as? MessageCommand.ParsedOption.Positional)?.let { parameter to it } }
+				.sortedWith { (_, lhs), (_, rhs) ->
+					if (lhs is MessageCommand.ParsedOption.Positional.Final != rhs is MessageCommand.ParsedOption.Positional.Final)
+						return@sortedWith if (lhs is MessageCommand.ParsedOption.Positional.Final) 1 else -1
+					return@sortedWith 0
+				}.toMap()
 
 			val handledOptions = mutableSetOf<MessageCommand.ParsedOption>()
 			var finishedHandlingNamedOptions = false

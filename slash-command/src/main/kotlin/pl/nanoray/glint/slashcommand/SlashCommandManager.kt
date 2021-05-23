@@ -27,8 +27,8 @@ interface SlashCommandManager {
 }
 
 internal class SlashCommandManagerImpl(
-		resolver: Resolver,
-		private val globalCommandsAsGuildCommands: Boolean = false
+	resolver: Resolver,
+	private val globalCommandsAsGuildCommands: Boolean = false
 ): SlashCommandManager {
 	private val jda: JDA by resolver.inject()
 	private val slashCommandDataParser: SlashCommandDataParser by resolver.inject()
@@ -59,15 +59,15 @@ internal class SlashCommandManagerImpl(
 	override fun updateGlobalSlashCommands(): Completable {
 		if (globalCommandsAsGuildCommands)
 			return jda.updateCommands()
-					.toCompletable()
+				.toCompletable()
 
 		val commands = commandProviders.flatMap { it.globalSlashCommands }
 		globalCommands.clear()
 		globalCommands.addAll(commands)
 		val commandData = commands.map { slashCommandDataParser.getSlashCommandData(it) }
 		return jda.updateCommands()
-				.addCommands(commandData)
-				.toCompletable()
+			.addCommands(commandData)
+			.toCompletable()
 	}
 
 	@CheckReturnValue
@@ -83,13 +83,13 @@ internal class SlashCommandManagerImpl(
 
 		val commandData = commands.map { slashCommandDataParser.getSlashCommandData(it) }
 		return guildEntity.updateCommands()
-				.addCommands(commandData)
-				.toCompletable()
+			.addCommands(commandData)
+			.toCompletable()
 	}
 
 	@CheckReturnValue
 	override fun updateAllSlashCommands(): Completable {
 		return updateGlobalSlashCommands()
-				.andThen(Completable.merge(jda.guilds.map { updateGuildSlashCommands(it.identifier) }))
+			.andThen(Completable.merge(jda.guilds.map { updateGuildSlashCommands(it.identifier) }))
 	}
 }

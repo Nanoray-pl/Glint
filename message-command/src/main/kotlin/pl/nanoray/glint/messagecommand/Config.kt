@@ -8,6 +8,6 @@ import pl.nanoray.glint.utilities.RegexSerializer
 
 @Serializable
 internal data class Config(
-		val commandPrefixes: List<String> = emptyList(),
-		val commandRegexes: List<Regex> = emptyList()
+	val commandPrefixes: List<String> = emptyList(),
+	val commandRegexes: List<Regex> = emptyList()
 )

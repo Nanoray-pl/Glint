@@ -43,7 +43,7 @@ inline fun <reified T: Any> ConfigManager.storeConfig(config: T?) {
 }
 
 internal class ConfigManagerImpl(
-		private val configPath: Path
+	private val configPath: Path
 ): ConfigManager {
 	private val jsonFormat = Json {
 		prettyPrint = true
@@ -59,9 +59,9 @@ internal class ConfigManagerImpl(
 	override fun storeConfig(type: KType, name: String, config: Any?) {
 		@Suppress("NAME_SHADOWING")
 		val configHandlers = listOf<Pair<List<String>, (Path, Any) -> Unit>>(
-				listOf("yml", "yaml") to { path, config -> storeYamlConfig(type, path, config) },
-				listOf("json") to { path, config -> storeJsonConfig(type, path, config) },
-				listOf("props", "properties") to { path, config -> storePropertiesConfig(type, path, config) }
+			listOf("yml", "yaml") to { path, config -> storeYamlConfig(type, path, config) },
+			listOf("json") to { path, config -> storeJsonConfig(type, path, config) },
+			listOf("props", "properties") to { path, config -> storePropertiesConfig(type, path, config) }
 		)
 		for ((extensions, configHandler) in configHandlers) {
 			for (extension in extensions) {

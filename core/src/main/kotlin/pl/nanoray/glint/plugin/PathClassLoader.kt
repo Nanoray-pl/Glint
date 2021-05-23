@@ -7,8 +7,8 @@ import kotlin.io.path.isRegularFile
 import kotlin.io.path.readBytes
 
 class PathClassLoader(
-		val paths: List<Path>,
-		parent: ClassLoader? = null
+	val paths: List<Path>,
+	parent: ClassLoader? = null
 ): ClassLoader(parent) {
 	override fun findClass(name: String?): Class<*> {
 		try {

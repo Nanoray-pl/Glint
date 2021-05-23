@@ -9,7 +9,7 @@ import pl.shockah.unikorn.dependency.inject
 import kotlin.reflect.typeOf
 
 internal class HelpCommand(
-		resolver: Resolver
+	resolver: Resolver
 ): MessageCommand<HelpCommand.Options>(typeOf<Options>()) {
 	override val name = "help"
 	override val description = "This very command."
@@ -19,7 +19,7 @@ internal class HelpCommand(
 	""".trimIndent()
 
 	data class Options(
-			@Option.Positional.Final("command", "The command to show information about.") val commandName: String? = null
+		@Option.Positional.Final("command", "The command to show information about.") val commandName: String? = null
 	)
 
 	private val commandManager: MessageCommandManager by resolver.inject()
@@ -68,14 +68,14 @@ internal class HelpCommand(
 	private fun handleListCommand(message: Message) {
 		val groupedCommands = commandManager.messageCommands.sortedBy { it.name.lowercase() }.groupBy { it.name.first().lowercase() }
 		message.reply(
-				EmbedBuilder().apply {
-					addField(
-							"Command list",
-							groupedCommands.entries.joinToString("\n") { it.value.joinToString(", ") { "`${it.name}`" } },
-							false
-					)
-					addCommandInfoFields(message.author, listOf(this@HelpCommand))
-				}.build()
+			EmbedBuilder().apply {
+				addField(
+					"Command list",
+					groupedCommands.entries.joinToString("\n") { it.value.joinToString(", ") { "`${it.name}`" } },
+					false
+				)
+				addCommandInfoFields(message.author, listOf(this@HelpCommand))
+			}.build()
 		).queue()
 	}
 
@@ -93,11 +93,11 @@ internal class HelpCommand(
 			}
 			if (nameChainLeft.isEmpty()) {
 				message.reply(
-						EmbedBuilder().apply {
-							setTitle("Command `${commandChain.joinToString(" ") { it.name }}`")
-							appendDescription(commandChain.last().description)
-							addCommandInfoFields(message.author, commandChain)
-						}.build()
+					EmbedBuilder().apply {
+						setTitle("Command `${commandChain.joinToString(" ") { it.name }}`")
+						appendDescription(commandChain.last().description)
+						addCommandInfoFields(message.author, commandChain)
+					}.build()
 				).queue()
 				return true
 			} else {

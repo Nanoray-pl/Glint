@@ -12,12 +12,12 @@ interface AppArguments {
 
 class ParsedAppArguments(parser: ArgParser): AppArguments {
 	override val configPath: Path by parser.storing(
-			"Config path",
-			transform = { Paths.get(this) }
+		"Config path",
+		transform = { Paths.get(this) }
 	).default(Paths.get("config"))
 
 	override val pluginPath: Path by parser.storing(
-			"Plugin path",
-			transform = { Paths.get(this) }
+		"Plugin path",
+		transform = { Paths.get(this) }
 	).default(Paths.get("plugins"))
 }

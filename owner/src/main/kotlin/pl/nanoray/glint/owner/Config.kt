@@ -5,5 +5,5 @@ import pl.nanoray.glint.jdaextensions.UserIdentifier
 
 @Serializable
 internal data class Config(
-		val owners: Set<UserIdentifier>
+	val owners: Set<UserIdentifier>
 )

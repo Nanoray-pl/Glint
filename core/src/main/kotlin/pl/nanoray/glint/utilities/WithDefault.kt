@@ -4,7 +4,7 @@ sealed class WithDefault<T> {
 	class Default<T>: WithDefault<T>()
 
 	data class NonDefault<T>(
-			val value: T
+		val value: T
 	): WithDefault<T>()
 
 	fun valueOrDefault(default: T): T {

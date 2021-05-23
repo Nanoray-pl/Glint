@@ -16,7 +16,7 @@ sealed class SlashCommand {
 	}
 
 	abstract class Simple<Options: Any>(
-			val optionsKlass: KClass<Options>
+		val optionsKlass: KClass<Options>
 	): SlashCommand() {
 		override fun getCommandMatchingPath(name: String, subcommandGroup: String?, subcommandName: String?): Simple<*>? {
 			return this.takeIf { name.equals(it.name, true) && subcommandGroup == null && subcommandName == null }
@@ -49,14 +49,14 @@ sealed class SlashCommand {
 	@Retention(AnnotationRetention.RUNTIME)
 	@Target(AnnotationTarget.VALUE_PARAMETER)
 	annotation class Option(
-			val name: String = "",
-			val description: String
+		val name: String = "",
+		val description: String
 	) {
 		@Retention(AnnotationRetention.RUNTIME)
 		@Target(AnnotationTarget.PROPERTY)
 		annotation class Choice(
-				val name: String = "",
-				val value: String = ""
+			val name: String = "",
+			val value: String = ""
 		)
 	}
 }

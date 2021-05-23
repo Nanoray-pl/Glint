@@ -12,7 +12,7 @@ import pl.shockah.unikorn.dependency.inject
 import kotlin.reflect.typeOf
 
 internal class OwnerCommand(
-		private val resolver: Resolver
+	private val resolver: Resolver
 ): MessageCommand<Unit>(typeOf<Unit>()) {
 	private val jda: JDA by resolver.inject()
 	private val ownerManager: WritableOwnerManager by resolver.inject()
@@ -23,10 +23,10 @@ internal class OwnerCommand(
 
 	override fun handleCommand(message: Message, options: Unit) {
 		message.reply(
-				EmbedBuilder()
-						.setTitle("Bot owners")
-						.appendDescription(ownerManager.owners.map { jda.retrieveUser(it).complete() }.joinToString("\n") { "${it.asMention} (${it.asTag})" })
-						.build()
+			EmbedBuilder()
+				.setTitle("Bot owners")
+				.appendDescription(ownerManager.owners.map { jda.retrieveUser(it).complete() }.joinToString("\n") { "${it.asMention} (${it.asTag})" })
+				.build()
 		).queue()
 	}
 

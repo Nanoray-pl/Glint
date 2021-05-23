@@ -11,7 +11,7 @@ import pl.shockah.unikorn.dependency.Resolver
 import pl.shockah.unikorn.dependency.inject
 
 internal class DiscordEventListener(
-		resolver: Resolver
+	resolver: Resolver
 ): ListenerAdapter() {
 	private val jda: JDA by resolver.inject()
 	private val slashCommandManager: SlashCommandManager by resolver.inject()
@@ -19,12 +19,12 @@ internal class DiscordEventListener(
 
 	override fun onReady(event: ReadyEvent) {
 		slashCommandManager.updateGlobalSlashCommands()
-				.subscribe()
+			.subscribe()
 	}
 
 	override fun onGuildReady(event: GuildReadyEvent) {
 		slashCommandManager.updateGuildSlashCommands(event.guild.identifier)
-				.subscribe()
+			.subscribe()
 	}
 
 	override fun onSlashCommand(event: SlashCommandEvent) {

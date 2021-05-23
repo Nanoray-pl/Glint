@@ -6,7 +6,7 @@ import kotlin.reflect.KClass
 import kotlin.reflect.KType
 
 abstract class ContainerEnabledPlugin(
-		@PublishedApi internal val container: Container
+	@PublishedApi internal val container: Container
 ): Plugin {
 	@PublishedApi internal val componentKeys = mutableSetOf<ComponentId<*, *>>()
 	private val pluginComponentId: ComponentId<*, *>

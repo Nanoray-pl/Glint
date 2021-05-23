@@ -22,7 +22,7 @@ internal interface DiscordWorker {
 }
 
 internal class DiscordWorkerImpl(
-		resolver: Resolver
+	resolver: Resolver
 ): DiscordWorker {
 	private val jda: JDA by resolver.inject()
 	private val voiceTextChannelManager: WritableVoiceTextChannelManager by resolver.inject()
@@ -47,18 +47,18 @@ internal class DiscordWorkerImpl(
 	override fun grantAccess(mapping: ChannelMapping, guild: Guild, member: Member): Completable {
 		val textChannel = jda.getTextChannel(mapping.textChannel) ?: throw IllegalArgumentException("Missing text channel ${mapping.textChannel} mapped to voice channel ${mapping.voiceChannel}.")
 		return textChannel.upsertPermissionOverride(member)
-				.grant(Permission.VIEW_CHANNEL)
-				.toSingle()
-				.ignoreElement()
+			.grant(Permission.VIEW_CHANNEL)
+			.toSingle()
+			.ignoreElement()
 	}
 
 	@CheckReturnValue
 	override fun denyAccess(mapping: ChannelMapping, guild: Guild, member: Member): Completable {
 		val textChannel = jda.getTextChannel(mapping.textChannel) ?: throw IllegalArgumentException("Missing text channel ${mapping.textChannel} mapped to voice channel ${mapping.voiceChannel}.")
 		return textChannel.upsertPermissionOverride(member)
-				.clear(Permission.VIEW_CHANNEL)
-				.toSingle()
-				.ignoreElement()
+			.clear(Permission.VIEW_CHANNEL)
+			.toSingle()
+			.ignoreElement()
 	}
 
 	@CheckReturnValue

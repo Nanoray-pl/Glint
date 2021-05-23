@@ -3,17 +3,17 @@ package pl.nanoray.glint.http
 import java.util.*
 
 class MultipartHttpBodyEncoder<A, B>(
-		private val encoder1: Encoder<A>,
-		private val encoder2: Encoder<B>
+	private val encoder1: Encoder<A>,
+	private val encoder2: Encoder<B>
 ): HttpBodyEncoder<Pair<MultipartHttpBodyEncoder.Part<A>, MultipartHttpBodyEncoder.Part<B>>> {
 	class Encoder<T>(
-			val instance: HttpBodyEncoder<T>,
-			val name: String
+		val instance: HttpBodyEncoder<T>,
+		val name: String
 	)
 
 	data class Part<T>(
-			val body: T,
-			val fileName: String? = null
+		val body: T,
+		val fileName: String? = null
 	)
 
 	private fun String.quoteEscaped(): String {

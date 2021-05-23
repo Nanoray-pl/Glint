@@ -11,7 +11,7 @@ import kotlin.time.Duration
 
 @Serializable
 class ChannelMapping(
-		val voiceChannel: VoiceChannelIdentifier,
-		val textChannel: TextChannelIdentifier,
-		val historyDuration: Duration
+	val voiceChannel: VoiceChannelIdentifier,
+	val textChannel: TextChannelIdentifier,
+	val historyDuration: Duration
 )

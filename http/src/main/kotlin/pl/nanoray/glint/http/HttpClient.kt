@@ -17,8 +17,8 @@ interface ObservableHttpClient: SingleHttpClient {
 
 	override fun requestSingle(request: HttpRequest): Single<HttpResponse> {
 		return requestObservable(request)
-				.filter { it is HttpTaskOutput.Response<*> && it.output is HttpResponse }
-				.map { (it as HttpTaskOutput.Response<*>).output as HttpResponse }
-				.singleOrError()
+			.filter { it is HttpTaskOutput.Response<*> && it.output is HttpResponse }
+			.map { (it as HttpTaskOutput.Response<*>).output as HttpResponse }
+			.singleOrError()
 	}
 }

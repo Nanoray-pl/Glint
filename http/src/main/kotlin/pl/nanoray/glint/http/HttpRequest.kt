@@ -3,10 +3,10 @@ package pl.nanoray.glint.http
 import java.net.URL
 
 data class HttpRequest(
-		val method: Method,
-		val url: URL,
-		val headers: Map<String, String> = emptyMap(),
-		val body: ByteArray
+	val method: Method,
+	val url: URL,
+	val headers: Map<String, String> = emptyMap(),
+	val body: ByteArray
 ) {
 	enum class Method {
 		GET, PUT, POST, DELETE, HEAD, OPTIONS, TRACE, CONNECT

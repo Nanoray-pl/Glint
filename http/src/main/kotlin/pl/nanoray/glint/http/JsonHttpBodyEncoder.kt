@@ -5,8 +5,8 @@ import kotlinx.serialization.json.Json
 import kotlinx.serialization.serializer
 
 class JsonHttpBodyEncoder<T> @PublishedApi internal constructor (
-		private val jsonFormat: Json,
-		private val serializer: KSerializer<T>
+	private val jsonFormat: Json,
+	private val serializer: KSerializer<T>
 ): HttpBodyEncoder<T> {
 	companion object {
 		inline operator fun <reified T> invoke(jsonFormat: Json): JsonHttpBodyEncoder<T> {

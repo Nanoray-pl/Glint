@@ -7,9 +7,9 @@ import kotlin.reflect.KType
 import kotlin.reflect.typeOf
 
 class ConfigStore<T>(
-		resolver: Resolver,
-		private val type: KType,
-		private val configName: String
+	resolver: Resolver,
+	private val type: KType,
+	private val configName: String
 ): Store<T?> {
 	companion object {
 		inline operator fun <reified T> invoke(resolver: Resolver, configName: String): ConfigStore<T> {

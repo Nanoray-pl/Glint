@@ -19,7 +19,7 @@ import kotlin.reflect.full.findAnnotation
 import kotlin.reflect.typeOf
 
 data class SlashCommandOptionsData(
-		val options: List<OptionData>
+	val options: List<OptionData>
 ) {
 	operator fun plus(option: OptionData): SlashCommandOptionsData {
 		return SlashCommandOptionsData(options + option)
@@ -64,7 +64,7 @@ fun SlashCommandDataParser.getSlashCommandData(command: SlashCommand): CommandDa
 }
 
 internal class SlashCommandDataParserImpl(
-		resolver: Resolver
+	resolver: Resolver
 ): SlashCommandDataParser {
 	val jda: JDA by resolver.inject()
 

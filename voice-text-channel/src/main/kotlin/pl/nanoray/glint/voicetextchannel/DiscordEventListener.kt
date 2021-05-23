@@ -12,7 +12,7 @@ import pl.shockah.unikorn.dependency.Resolver
 import pl.shockah.unikorn.dependency.inject
 
 internal class DiscordEventListener(
-		resolver: Resolver
+	resolver: Resolver
 ): ListenerAdapter() {
 	private val jda: JDA by resolver.inject()
 	private val voiceTextChannelManager: WritableVoiceTextChannelManager by resolver.inject()
@@ -25,8 +25,8 @@ internal class DiscordEventListener(
 	override fun onGenericEvent(event: GenericEvent) {
 		if (event is GenericGuildVoiceUpdateEvent) {
 			discordWorker
-					.updateAccess(event.channelLeft, event.channelJoined, event.guild, event.member)
-					.subscribe()
+				.updateAccess(event.channelLeft, event.channelJoined, event.guild, event.member)
+				.subscribe()
 		}
 	}
 

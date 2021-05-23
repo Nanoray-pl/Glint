@@ -2,8 +2,8 @@ package pl.nanoray.glint.http
 
 interface HttpBodyEncoder<Input> {
 	data class Result(
-			val contentType: String,
-			val data: ByteArray
+		val contentType: String,
+		val data: ByteArray
 	) {
 		override fun equals(other: Any?): Boolean {
 			if (this === other) return true

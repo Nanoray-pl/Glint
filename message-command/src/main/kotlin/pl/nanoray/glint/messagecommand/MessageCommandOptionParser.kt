@@ -12,7 +12,7 @@ import kotlin.reflect.KType
 
 interface MessageCommandOptionParser {
 	class ParseException(
-			val reason: String
+		val reason: String
 	): Exception()
 
 	fun canParseMessageCommandOption(type: KType): Boolean
@@ -118,7 +118,7 @@ object StringMessageCommandOptionParser: MessageCommandOptionParser {
 }
 
 class UserMessageCommandOptionParser(
-		resolver: Resolver
+	resolver: Resolver
 ): MessageCommandOptionParser {
 	private val jda: JDA by resolver.inject()
 
@@ -154,7 +154,7 @@ class UserMessageCommandOptionParser(
 }
 
 class RoleMessageCommandOptionParser(
-		resolver: Resolver
+	resolver: Resolver
 ): MessageCommandOptionParser {
 	private val jda: JDA by resolver.inject()
 
@@ -186,7 +186,7 @@ class RoleMessageCommandOptionParser(
 }
 
 class GuildChannelMessageCommandOptionParser(
-		resolver: Resolver
+	resolver: Resolver
 ): MessageCommandOptionParser {
 	private val jda: JDA by resolver.inject()
 
@@ -219,7 +219,7 @@ class GuildChannelMessageCommandOptionParser(
 }
 
 class TextChannelMessageCommandOptionParser(
-		resolver: Resolver
+	resolver: Resolver
 ): MessageCommandOptionParser {
 	private val jda: JDA by resolver.inject()
 
@@ -251,7 +251,7 @@ class TextChannelMessageCommandOptionParser(
 }
 
 class VoiceChannelMessageCommandOptionParser(
-		resolver: Resolver
+	resolver: Resolver
 ): MessageCommandOptionParser {
 	private val jda: JDA by resolver.inject()
 

@@ -4,11 +4,11 @@ import java.util.concurrent.locks.ReentrantLock
 import kotlin.concurrent.withLock
 
 class CachingStore<T>(
-		private val wrapped: Store<T>
+	private val wrapped: Store<T>
 ): Store<T> {
 	private sealed class Value<T> {
 		class Cached<T>(
-				val value: T
+			val value: T
 		): Value<T>()
 
 		class NotCached<T>: Value<T>()

@@ -6,8 +6,8 @@ import kotlin.concurrent.schedule
 import kotlin.concurrent.withLock
 
 class ThrottleStore<T>(
-		wrapped: Store<T>,
-		private val throttleTimeMs: Long
+	wrapped: Store<T>,
+	private val throttleTimeMs: Long
 ): Store<T> {
 	private val wrapped = wrapped as? CachingStore<T> ?: wrapped.caching()
 	private val lock = ReentrantLock()

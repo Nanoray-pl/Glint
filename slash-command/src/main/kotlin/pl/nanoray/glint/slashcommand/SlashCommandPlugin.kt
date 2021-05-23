@@ -8,7 +8,7 @@ import pl.shockah.unikorn.plugin.Plugin
 import pl.shockah.unikorn.plugin.PluginInfo
 
 class SlashCommandPlugin(
-		container: Container
+	container: Container
 ): ContainerEnabledPlugin(container) {
 	private val jda: JDA by resolver.inject()
 	private val slashCommandManger: SlashCommandManager by resolver.inject()
@@ -31,6 +31,6 @@ class SlashCommandPlugin(
 		super.onPluginLoadCycleFinished(allLoadedPlugins, newlyLoadedPlugins)
 		if (jda.status == JDA.Status.CONNECTED)
 			slashCommandManger.updateAllSlashCommands()
-					.subscribe()
+				.subscribe()
 	}
 }

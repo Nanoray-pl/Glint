@@ -9,11 +9,11 @@ import net.dv8tion.jda.api.interactions.commands.Command
 
 @Serializable(SnowflakeIdentifierSerializer::class)
 data class SnowflakeIdentifier<out SnowflakeType: ISnowflake>(
-		val value: Long
+	val value: Long
 )
 
 class SnowflakeIdentifierSerializer<SnowflakeType: ISnowflake>(
-		private val longSerializer: KSerializer<Long>
+	longSerializer: KSerializer<Long>
 ): KSerializer<SnowflakeIdentifier<SnowflakeType>> {
 	override val descriptor = longSerializer.descriptor
 

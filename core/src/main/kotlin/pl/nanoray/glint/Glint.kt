@@ -17,7 +17,7 @@ import kotlin.reflect.KFunction
 import kotlin.reflect.KParameter
 
 class Glint(
-		val arguments: AppArguments
+	val arguments: AppArguments
 ) {
 	companion object {
 		@JvmStatic
@@ -51,31 +51,31 @@ class Glint(
 		register { JDABuilder.createDefault(it.resolve<CoreConfig>().token).build() }
 		register<PluginManager.Dynamic.FullUnload.Reload> {
 			SerialPluginManager(
-					infoProvider = PathPluginInfoProvider(arguments.pluginPath),
-					loaderFactory = PathPluginLoaderFactory(),
-					parameterHandlers = listOf(
-							InstancePluginConstructorParameterHandler(container),
-							object: PluginConstructorParameterHandler {
-								private val pluginManager: PluginManager by it.inject()
+				infoProvider = PathPluginInfoProvider(arguments.pluginPath),
+				loaderFactory = PathPluginLoaderFactory(),
+				parameterHandlers = listOf(
+					InstancePluginConstructorParameterHandler(container),
+					object: PluginConstructorParameterHandler {
+						private val pluginManager: PluginManager by it.inject()
 
-								override fun handleConstructorParameter(constructor: KFunction<Plugin>, parameter: KParameter): Any {
-									for (plugin in pluginManager.loadedPlugins.values) {
-										if ((parameter.type.classifier as? KClass<*>)?.isInstance(plugin) == true)
-											return plugin
-									}
-									throw PluginConstructorParameterHandler.UnhandledParameter()
-								}
-							},
-							object: PluginConstructorParameterHandler {
-								override fun handleConstructorParameter(constructor: KFunction<Plugin>, parameter: KParameter): Any {
-									try {
-										return it.resolve(parameter.type, parameter.type.classifier as KClass<*>)
-									} catch (_: MissingComponentException) {
-										throw PluginConstructorParameterHandler.UnhandledParameter()
-									}
-								}
+						override fun handleConstructorParameter(constructor: KFunction<Plugin>, parameter: KParameter): Any {
+							for (plugin in pluginManager.loadedPlugins.values) {
+								if ((parameter.type.classifier as? KClass<*>)?.isInstance(plugin) == true)
+									return plugin
 							}
-					)
+							throw PluginConstructorParameterHandler.UnhandledParameter()
+						}
+					},
+					object: PluginConstructorParameterHandler {
+						override fun handleConstructorParameter(constructor: KFunction<Plugin>, parameter: KParameter): Any {
+							try {
+								return it.resolve(parameter.type, parameter.type.classifier as KClass<*>)
+							} catch (_: MissingComponentException) {
+								throw PluginConstructorParameterHandler.UnhandledParameter()
+							}
+						}
+					}
+				)
 			)
 		}
 		register<DurationParser> { DurationSerializer }

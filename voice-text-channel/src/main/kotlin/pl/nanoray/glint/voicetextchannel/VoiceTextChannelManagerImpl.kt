@@ -17,8 +17,8 @@ import kotlin.concurrent.write
 import kotlin.time.Duration
 
 internal class VoiceTextChannelManagerImpl(
-		private val resolver: Resolver,
-		private val store: Store<Set<ChannelMapping>>
+	private val resolver: Resolver,
+	private val store: Store<Set<ChannelMapping>>
 ): WritableVoiceTextChannelManager {
 	private val jda: JDA by resolver.inject()
 	private val discordWorker: DiscordWorker by resolver.inject()
@@ -47,9 +47,9 @@ internal class VoiceTextChannelManagerImpl(
 
 	@CheckReturnValue
 	override fun linkTextChannelToVoiceChannel(
-			textChannel: TextChannelIdentifier,
-			voiceChannel: VoiceChannelIdentifier,
-			duration: WithDefault<Duration>
+		textChannel: TextChannelIdentifier,
+		voiceChannel: VoiceChannelIdentifier,
+		duration: WithDefault<Duration>
 	): Completable {
 		return Completable.defer {
 			lock.write {
@@ -64,9 +64,9 @@ internal class VoiceTextChannelManagerImpl(
 					observers.forEach { it.onVoiceTextChannelMappingRemoved(this, voiceChannelMapping) }
 
 				val newMapping = ChannelMapping(
-						voiceChannel,
-						textChannel,
-						duration.valueOrDefault(VoiceTextChannelDefaults.historyDuration)
+					voiceChannel,
+					textChannel,
+					duration.valueOrDefault(VoiceTextChannelDefaults.historyDuration)
 				)
 				mappings.add(newMapping)
 				observers.forEach { it.onVoiceTextChannelMappingAdded(this, newMapping) }
