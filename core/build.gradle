@@ -34,3 +34,13 @@ jar {
 		)
 	}
 }
+
+task copyForTest(type: Copy) {
+	group = 'build'
+	dependsOn 'shadowJar'
+
+	from('build/libs') {
+		include "${project.name}-all.jar"
+	}
+	into '../test'
+}

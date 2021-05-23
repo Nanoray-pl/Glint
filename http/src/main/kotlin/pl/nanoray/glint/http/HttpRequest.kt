@@ -9,7 +9,7 @@ data class HttpRequest(
 	val body: ByteArray
 ) {
 	enum class Method {
-		GET, PUT, POST, DELETE, HEAD, OPTIONS, TRACE, CONNECT
+		GET, PUT, POST, PATCH, DELETE, HEAD
 	}
 
 	override fun equals(other: Any?): Boolean {

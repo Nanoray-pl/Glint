@@ -1,0 +1,8 @@
+package pl.nanoray.glint.http
+
+interface HttpClientConfigurationKey
+
+object HttpClientConnectTimeout: HttpClientConfigurationKey
+object HttpClientReadTimeout: HttpClientConfigurationKey
+object HttpClientWriteTimeout: HttpClientConfigurationKey
+object HttpClientCallTimeout: HttpClientConfigurationKey

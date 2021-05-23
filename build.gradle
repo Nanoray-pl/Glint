@@ -53,6 +53,11 @@ subprojects {
 	}
 
 	dependencies {
+		if (project.isPlugin) {
+			compileOnly "org.jetbrains.kotlin:kotlin-stdlib-jdk8:$kotlinVersion"
+			compileOnly "org.jetbrains.kotlin:kotlin-reflect:$kotlinVersion"
+		}
+
 		// unit tests
 		testImplementation "org.junit.jupiter:junit-jupiter-api:$junitVersion"
 		testRuntimeOnly "org.junit.jupiter:junit-jupiter-engine:$junitVersion"
@@ -65,7 +70,7 @@ subprojects {
 	}
 
 	if (project.isPlugin) {
-		task copyTestPlugin(type: Copy) {
+		task copyForTest(type: Copy) {
 			group = 'build'
 			dependsOn 'shadowJar'
 
