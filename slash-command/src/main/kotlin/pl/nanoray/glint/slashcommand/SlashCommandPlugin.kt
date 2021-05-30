@@ -1,6 +1,8 @@
 package pl.nanoray.glint.slashcommand
 
 import net.dv8tion.jda.api.JDA
+import pl.nanoray.glint.ConfigManager
+import pl.nanoray.glint.getConfig
 import pl.nanoray.glint.plugin.ContainerEnabledPlugin
 import pl.shockah.unikorn.dependency.Container
 import pl.shockah.unikorn.dependency.inject
@@ -12,12 +14,14 @@ class SlashCommandPlugin(
 ): ContainerEnabledPlugin(container) {
 	private val jda: JDA by resolver.inject()
 	private val slashCommandManger: SlashCommandManager by resolver.inject()
+	private val configManager: ConfigManager by resolver.inject()
 
 	private val eventListener by lazy { DiscordEventListener(container) }
+	private val config by lazy { configManager.getConfig() ?: Config() }
 
 	init {
 		register<SlashCommandDataParser> { SlashCommandDataParserImpl(it) }
-		register<SlashCommandManager> { SlashCommandManagerImpl(it, true) }
+		register<SlashCommandManager> { SlashCommandManagerImpl(it, config.globalCommandsAsGuildCommands) }
 
 		jda.addEventListener(eventListener)
 	}

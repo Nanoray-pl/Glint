@@ -29,7 +29,7 @@ class BungiePlugin(
 	private val storePlugin: StorePlugin by resolver.inject()
 
 	private val config by lazy { configManager.getConfig<Config>() ?: throw IllegalArgumentException("Cannot parse Config.") }
-	private val service: OAuth20Service by lazy { ServiceBuilder(config.oauth.clientId).apiSecret(config.oauth.apiKey).build(BungieOAuthApi()) }
+	private val service: OAuth20Service by lazy { ServiceBuilder(config.oauth.clientId).apiSecret(config.oauth.clientSecret).callback("${config.oauth.redirectUrl}").build(BungieOAuthApi()) }
 	private val httpClient by lazy { httpClientFactory.createHttpClient() }
 
 	private val pluginContainer = Container(container)

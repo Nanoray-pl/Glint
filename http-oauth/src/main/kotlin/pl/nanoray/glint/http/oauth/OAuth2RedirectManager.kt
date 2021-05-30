@@ -3,6 +3,10 @@ package pl.nanoray.glint.http.oauth
 import fi.iki.elonen.NanoHTTPD
 import pl.nanoray.glint.http.HttpResponse
 import java.io.Closeable
+import java.io.File
+import java.security.KeyStore
+import javax.net.ssl.KeyManagerFactory
+
 
 interface OAuth2RedirectHandler {
 	fun handleOAuth2Redirect(state: String, parameters: Map<String, String>): HttpResponse?
@@ -19,6 +23,11 @@ class OAuth2RedirectManagerImpl(
 	private val handlers = mutableListOf<OAuth2RedirectHandler>()
 
 	init {
+		val keyStore = KeyStore.getInstance(KeyStore.getDefaultType())
+		keyStore.load(File("keystore.jks").readBytes().inputStream(), "password".toCharArray())
+		val keyManagerFactory = KeyManagerFactory.getInstance(KeyManagerFactory.getDefaultAlgorithm())
+		keyManagerFactory.init(keyStore, "password".toCharArray())
+		makeSecure(makeSSLSocketFactory(keyStore, keyManagerFactory), null)
 		start()
 	}
 
