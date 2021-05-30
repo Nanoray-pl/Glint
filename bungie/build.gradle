@@ -1,0 +1,17 @@
+dependencies {
+	compileOnly project(':core')
+	compileOnly project(':http')
+	compileOnly project(':http-oauth')
+	compileOnly project(':slash-command')
+	compileOnly project(':store')
+}
+
+test {
+	useJUnitPlatform()
+
+	dependsOn 'cleanTest'
+
+	testLogging {
+		events "passed", "skipped", "failed"
+	}
+}

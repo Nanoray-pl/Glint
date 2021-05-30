@@ -53,7 +53,7 @@ internal class OkHttpClient(
                     }
 
                     override fun onResponse(call: Call, response: Response) {
-                        emitter.onSuccess(HttpResponse(request.method, request.url, response.code, response.headers.toMap(), response.body?.bytes() ?: ByteArray(0)))
+                        emitter.onSuccess(HttpResponse(response.code, response.headers.toMap(), response.body?.bytes() ?: ByteArray(0)))
                     }
                 })
             }

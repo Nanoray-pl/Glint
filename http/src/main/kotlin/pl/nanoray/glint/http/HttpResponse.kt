@@ -1,10 +1,6 @@
 package pl.nanoray.glint.http
 
-import java.net.URL
-
 data class HttpResponse(
-	val method: HttpRequest.Method,
-	val url: URL,
 	val statusCode: Int,
 	val headers: Map<String, String>,
 	val data: ByteArray

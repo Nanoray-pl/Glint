@@ -1,0 +1,6 @@
+identifier: pl.nanoray.glint.bungie
+pluginClassName: pl.nanoray.glint.bungie.BungiePlugin
+dependencies:
+  - pl.nanoray.glint.http
+  - pl.nanoray.glint.http-oauth
+  - pl.nanoray.glint.store

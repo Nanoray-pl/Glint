@@ -27,6 +27,7 @@ class StorePlugin(
 	}
 
 	fun unregisterThrottleStore(throttleStore: ThrottleStore<*>) {
+		throttleStore.storeNow()
 		throttleStores.remove(throttleStore)
 	}
 }

@@ -1,0 +1,2 @@
+identifier: pl.nanoray.glint.http.oauth
+pluginClassName: pl.nanoray.glint.http.oauth.HttpOAuthPlugin
