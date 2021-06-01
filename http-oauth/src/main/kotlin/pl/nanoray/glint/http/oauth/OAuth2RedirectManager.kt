@@ -3,9 +3,9 @@ package pl.nanoray.glint.http.oauth
 import fi.iki.elonen.NanoHTTPD
 import pl.nanoray.glint.http.HttpResponse
 import java.io.Closeable
-import java.io.File
 import java.security.KeyStore
 import javax.net.ssl.KeyManagerFactory
+import kotlin.io.path.readBytes
 
 
 interface OAuth2RedirectHandler {
@@ -17,17 +17,23 @@ interface OAuth2RedirectManager: Closeable {
 	fun removeHandler(handler: OAuth2RedirectHandler)
 }
 
-class OAuth2RedirectManagerImpl(
-	port: Int
-): NanoHTTPD(port), OAuth2RedirectManager {
+internal class OAuth2RedirectManagerImpl(
+	config: Config
+): NanoHTTPD(config.redirectServer.port), OAuth2RedirectManager {
 	private val handlers = mutableListOf<OAuth2RedirectHandler>()
 
 	init {
-		val keyStore = KeyStore.getInstance(KeyStore.getDefaultType())
-		keyStore.load(File("keystore.jks").readBytes().inputStream(), "password".toCharArray())
-		val keyManagerFactory = KeyManagerFactory.getInstance(KeyManagerFactory.getDefaultAlgorithm())
-		keyManagerFactory.init(keyStore, "password".toCharArray())
-		makeSecure(makeSSLSocketFactory(keyStore, keyManagerFactory), null)
+		when (config.redirectServer.ssl) {
+			null -> { }
+			else -> {
+				val keyStore = KeyStore.getInstance(KeyStore.getDefaultType())
+				val password = config.redirectServer.ssl.keystore.password
+				keyStore.load(config.redirectServer.ssl.keystore.path.readBytes().inputStream(), password.toCharArray())
+				val keyManagerFactory = KeyManagerFactory.getInstance(KeyManagerFactory.getDefaultAlgorithm())
+				keyManagerFactory.init(keyStore, password.toCharArray())
+				makeSecure(makeSSLSocketFactory(keyStore, keyManagerFactory), null)
+			}
+		}
 		start()
 	}
 

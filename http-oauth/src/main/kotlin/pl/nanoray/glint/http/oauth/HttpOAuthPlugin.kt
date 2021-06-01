@@ -16,7 +16,7 @@ class HttpOAuthPlugin(
 
 	init {
 		register<OAuth2RedirectManager> {
-			val redirectManager = OAuth2RedirectManagerImpl(config.redirectServerPort)
+			val redirectManager = OAuth2RedirectManagerImpl(config)
 			this.redirectManager = redirectManager
 			return@register redirectManager
 		}

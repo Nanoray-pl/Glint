@@ -1,6 +1,7 @@
 package pl.nanoray.glint.http.oauth
 
 import com.github.scribejava.core.oauth.OAuth20Service
+import io.reactivex.rxjava3.core.Completable
 import io.reactivex.rxjava3.core.Observable
 import io.reactivex.rxjava3.core.Single
 import kotlinx.datetime.Clock
@@ -17,20 +18,25 @@ import kotlin.time.TimeMark
 import kotlin.time.TimeSource
 import kotlin.time.toDuration
 
-abstract class OAuth2HttpClient<UserId>(
+abstract class OAuth2HttpClient<UserId, Token: OAuth2Token>(
 	protected val wrapped: SingleHttpClient,
 	private val userId: UserId,
 	private val oAuth2RedirectManager: OAuth2RedirectManager,
 	private val service: OAuth20Service,
-	private val tokenStore: Store<OAuth2Token?>
+	private val tokenParser: TokenParser<Token>,
+	private val tokenStore: Store<Token?>
 ): Closeable {
 	class UnauthorizedException: Exception()
+	class CannotRefreshException: Exception()
 
 	private data class AuthorizationRequest<UserId>(
 		val userId: UserId,
-		val timeoutMark: TimeMark,
+		val timeoutMark: TimeMark, // TODO: handle timeout
 		val id: UUID
 	)
+
+	val token: Token?
+		get() = lock.withLock { tokenStore.value }
 
 	protected val lock = ReentrantLock()
 	private var isHandlerAdded = false
@@ -50,6 +56,22 @@ abstract class OAuth2HttpClient<UserId>(
 		}
 	}
 
+	fun refreshTokens(): Completable {
+		return Completable.defer {
+			val token = lock.withLock { tokenStore.value } ?: return@defer Completable.error(UnauthorizedException())
+			val refreshToken = token.refreshToken ?: return@defer Completable.error(CannotRefreshException())
+			if (refreshToken.expiryTime != null && refreshToken.expiryTime >= Clock.System.now())
+				return@defer Completable.error(CannotRefreshException())
+			return@defer Single.fromFuture(service.refreshAccessTokenAsync(refreshToken.token))
+				.map { apiToken -> return@map lock.withLock {
+					val newToken = tokenParser.parseToken(apiToken)
+					tokenStore.value = newToken
+					return@withLock newToken
+				} }
+				.ignoreElement()
+		}
+	}
+
 	override fun close() {
 		lock.withLock {
 			if (isHandlerAdded) {
@@ -62,11 +84,14 @@ abstract class OAuth2HttpClient<UserId>(
 	protected fun refreshIfNeededAndModifyRequest(request: HttpRequest): Single<HttpRequest> {
 		return Single.defer {
 			val token = lock.withLock { tokenStore.value } ?: return@defer Single.error(UnauthorizedException())
-			if (token.expiryTime >= Clock.System.now()) {
+			val expiryTime = token.accessToken.expiryTime
+			if (expiryTime != null && expiryTime >= Clock.System.now()) {
 				val refreshToken = token.refreshToken ?: return@defer Single.error(UnauthorizedException())
-				return@defer Single.fromFuture(service.refreshAccessTokenAsync(refreshToken))
+				if (refreshToken.expiryTime != null && refreshToken.expiryTime >= Clock.System.now())
+					return@defer Single.error(CannotRefreshException())
+				return@defer Single.fromFuture(service.refreshAccessTokenAsync(refreshToken.token))
 					.map { apiToken -> return@map lock.withLock {
-						val newToken = OAuth2Token(apiToken.accessToken, apiToken.refreshToken, Clock.System.now() + apiToken.expiresIn.toDuration(TimeUnit.SECONDS))
+						val newToken = tokenParser.parseToken(apiToken)
 						tokenStore.value = newToken
 						return@withLock newToken
 					} }
@@ -93,7 +118,7 @@ abstract class OAuth2HttpClient<UserId>(
 					iterator.remove()
 					Single.fromFuture(service.getAccessTokenAsync(code))
 						.subscribe { token -> lock.withLock {
-							tokenStore.value = OAuth2Token(token.accessToken, token.refreshToken, Clock.System.now() + token.expiresIn.toDuration(TimeUnit.SECONDS))
+							tokenStore.value = tokenParser.parseToken(token)
 						} }
 					return@withLock HttpResponse(
 						200,
@@ -109,26 +134,28 @@ abstract class OAuth2HttpClient<UserId>(
 	}
 }
 
-class OAuth2SingleHttpClient<UserId>(
+class OAuth2SingleHttpClient<UserId, Token: OAuth2Token>(
 	wrapped: SingleHttpClient,
 	userId: UserId,
 	oAuth2RedirectManager: OAuth2RedirectManager,
 	service: OAuth20Service,
-	tokenStore: Store<OAuth2Token?>
-): OAuth2HttpClient<UserId>(wrapped, userId, oAuth2RedirectManager, service, tokenStore), SingleHttpClient {
+	tokenParser: TokenParser<Token>,
+	tokenStore: Store<Token?>
+): OAuth2HttpClient<UserId, Token>(wrapped, userId, oAuth2RedirectManager, service, tokenParser, tokenStore), SingleHttpClient {
 	override fun requestSingle(request: HttpRequest): Single<HttpResponse> {
 		return refreshIfNeededAndModifyRequest(request)
 			.flatMap { wrapped.requestSingle(it) }
 	}
 }
 
-class OAuth2ObservableHttpClient<UserId>(
+class OAuth2ObservableHttpClient<UserId, Token: OAuth2Token>(
 	wrapped: ObservableHttpClient,
 	userId: UserId,
 	oAuth2RedirectManager: OAuth2RedirectManager,
 	service: OAuth20Service,
-	tokenStore: Store<OAuth2Token?>
-): OAuth2HttpClient<UserId>(wrapped, userId, oAuth2RedirectManager, service, tokenStore), ObservableHttpClient {
+	tokenParser: TokenParser<Token>,
+	tokenStore: Store<Token?>
+): OAuth2HttpClient<UserId, Token>(wrapped, userId, oAuth2RedirectManager, service, tokenParser, tokenStore), ObservableHttpClient {
 	private val observableWrapped: ObservableHttpClient
 		get() = wrapped as ObservableHttpClient
 

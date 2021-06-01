@@ -14,11 +14,11 @@ class BungieLinkCommand(
 	override val name = "bungielink"
 	override val description = "Link your Discord account with your Bungie account."
 
-	private val httpClientManager: OAuth2HttpClientManager<UserIdentifier> by resolver.inject()
+	private val httpClientManager: OAuth2HttpClientManager<UserIdentifier, BungieToken> by resolver.inject()
 
 	override fun handleCommand(event: SlashCommandEvent, options: Unit) {
 		val client = httpClientManager.getHttpClient(event.user.identifier)
 		val url = client.startAuthorization()
-		event.reply("Visit this link to link your accounts: $url").queue()
+		event.reply("Visit this URL to link your account: $url").setEphemeral(true).queue()
 	}
 }

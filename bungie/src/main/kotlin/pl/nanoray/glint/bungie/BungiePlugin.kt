@@ -5,7 +5,10 @@ import com.github.scribejava.core.oauth.OAuth20Service
 import pl.nanoray.glint.ConfigManager
 import pl.nanoray.glint.getConfig
 import pl.nanoray.glint.http.SingleHttpClientFactory
-import pl.nanoray.glint.http.oauth.*
+import pl.nanoray.glint.http.oauth.OAuth2RedirectManager
+import pl.nanoray.glint.http.oauth.OAuth2SingleHttpClientManager
+import pl.nanoray.glint.http.oauth.StoreOAuth2SingleHttpClientManager
+import pl.nanoray.glint.http.oauth.TokenParser
 import pl.nanoray.glint.jdaextensions.UserIdentifier
 import pl.nanoray.glint.plugin.ContainerEnabledPlugin
 import pl.nanoray.glint.slashcommand.SlashCommand
@@ -33,9 +36,10 @@ class BungiePlugin(
 	private val httpClient by lazy { httpClientFactory.createHttpClient() }
 
 	private val pluginContainer = Container(container)
-	private val httpClientManager: OAuth2HttpClientManager<UserIdentifier> by pluginContainer.inject()
+	private val tokenParser: TokenParser<BungieToken> by pluginContainer.inject()
+	private val httpClientManager: OAuth2SingleHttpClientManager<UserIdentifier, BungieToken> by pluginContainer.inject()
 
-	private val tokenStore = ConfigStore<Map<UserIdentifier, OAuth2Token>>(resolver, "${this::class.qualifiedName!!}.tokens")
+	private val tokenStore = ConfigStore<Map<UserIdentifier, BungieToken>>(resolver, "${this::class.qualifiedName!!}.tokens")
 		.replacingNull(emptyMap())
 		.throttling(15_000)
 
@@ -45,7 +49,8 @@ class BungiePlugin(
 		get() = setOf(bungieLinkCommand)
 
 	init {
-		pluginContainer.register<OAuth2SingleHttpClientManager<UserIdentifier>> { StoreOAuth2SingleHttpClientManager(httpClient, tokenStore, redirectManager, service) }
+		pluginContainer.register<TokenParser<BungieToken>> { BungieTokenParser }
+		pluginContainer.register<OAuth2SingleHttpClientManager<UserIdentifier, BungieToken>> { StoreOAuth2SingleHttpClientManager(httpClient, tokenStore, redirectManager, service, tokenParser) }
 		slashCommandManager.registerSlashCommandProvider(this)
 		storePlugin.registerThrottleStore(tokenStore)
 	}
