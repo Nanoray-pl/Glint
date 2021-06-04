@@ -1,7 +1,7 @@
-package pl.nanoray.glint.bungie.api
+package pl.nanoray.glint.bungie.api.model
 
 import kotlinx.serialization.Serializable
-import pl.nanoray.glint.bungie.api.custom.ApiRelativeUrl
+import pl.nanoray.glint.bungie.api.model.custom.ApiRelativeUrl
 
 @Serializable
 data class DestinyInventoryItemDefinition(

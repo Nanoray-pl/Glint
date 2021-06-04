@@ -1,10 +1,10 @@
-package pl.nanoray.glint.bungie.api
+package pl.nanoray.glint.bungie.api.model
 
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
-import pl.nanoray.glint.bungie.api.custom.ApiRelativeUrl
-import pl.nanoray.glint.bungie.api.custom.MembershipId
-import pl.nanoray.glint.bungie.api.custom.PlatformType
+import pl.nanoray.glint.bungie.api.model.custom.ApiRelativeUrl
+import pl.nanoray.glint.bungie.api.model.custom.MembershipId
+import pl.nanoray.glint.bungie.api.model.custom.PlatformType
 
 @Serializable
 data class GroupUserInfoCard(

@@ -1,4 +1,4 @@
-package pl.nanoray.glint.bungie.api
+package pl.nanoray.glint.bungie.api.model.custom
 
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.SerialName
@@ -12,7 +12,7 @@ import kotlin.time.toDuration
 
 @Serializable
 data class ApiResponse<Response>(
-    @SerialName("Response") val response: Response,
+    @SerialName("Response") val response: Response? = null,
     @SerialName("ErrorCode") val errorCode: Int,
     @SerialName("ThrottleSeconds") @Serializable(with = DurationSecondsSerializer::class) val throttle: Duration,
     @SerialName("ErrorStatus") val errorStatus: String,

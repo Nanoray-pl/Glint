@@ -1,7 +1,9 @@
-package pl.nanoray.glint.bungie.api.custom
+package pl.nanoray.glint.bungie.api.model
 
 import kotlinx.datetime.Instant
 import kotlinx.serialization.Serializable
+import pl.nanoray.glint.bungie.api.model.custom.ApiRelativeUrl
+import pl.nanoray.glint.bungie.api.model.custom.MembershipId
 
 @Serializable
 data class GeneralUser(

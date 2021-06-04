@@ -1,27 +1,26 @@
-package pl.nanoray.glint.bungie.api
+package pl.nanoray.glint.bungie.api.model
 
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.builtins.serializer
 import kotlinx.serialization.encoding.Decoder
 import kotlinx.serialization.encoding.Encoder
-import pl.nanoray.glint.bungie.api.custom.PlatformType
 
-@Serializable(with = PlatformType.Serializer::class)
-enum class MembershipType(
+@Serializable(with = DestinyStatCategory.Serializer::class)
+enum class DestinyStatCategory(
     val id: Int
 ) {
-    None(0), Xbox(1), PSN(2), Steam(3), Blizzard(4), Stadia(5), Demon(10), BungieNext(254);
+    Gameplay(0), Weapon(1), Defense(2), Primary(3);
 
-    object Serializer: KSerializer<MembershipType> {
+    object Serializer: KSerializer<DestinyStatCategory> {
         private val intSerializer = Int.serializer()
         override val descriptor = intSerializer.descriptor
 
-        override fun serialize(encoder: Encoder, value: MembershipType) {
+        override fun serialize(encoder: Encoder, value: DestinyStatCategory) {
             intSerializer.serialize(encoder, value.id)
         }
 
-        override fun deserialize(decoder: Decoder): MembershipType {
+        override fun deserialize(decoder: Decoder): DestinyStatCategory {
             val id = intSerializer.deserialize(decoder)
             return values().first { it.id == id }
         }

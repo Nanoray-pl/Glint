@@ -1,4 +1,4 @@
-package pl.nanoray.glint.bungie.api
+package pl.nanoray.glint.bungie.api.model
 
 import kotlinx.serialization.Serializable
 

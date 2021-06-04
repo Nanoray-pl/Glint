@@ -1,11 +1,11 @@
-package pl.nanoray.glint.bungie.api
+package pl.nanoray.glint.bungie.api.model
 
 import kotlinx.datetime.Instant
 import kotlinx.serialization.Serializable
-import pl.nanoray.glint.bungie.api.custom.ApiRelativeUrl
-import pl.nanoray.glint.bungie.api.custom.CharacterId
-import pl.nanoray.glint.bungie.api.custom.ManifestId
-import pl.nanoray.glint.bungie.api.custom.MembershipId
+import pl.nanoray.glint.bungie.api.model.custom.ApiRelativeUrl
+import pl.nanoray.glint.bungie.api.model.custom.CharacterId
+import pl.nanoray.glint.bungie.api.model.custom.ManifestId
+import pl.nanoray.glint.bungie.api.model.custom.MembershipId
 
 @Serializable
 data class DestinyCharacterComponent(

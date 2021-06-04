@@ -1,4 +1,4 @@
-package pl.nanoray.glint.bungie.api
+package pl.nanoray.glint.bungie.api.model
 
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.Serializable
@@ -6,21 +6,21 @@ import kotlinx.serialization.builtins.serializer
 import kotlinx.serialization.encoding.Decoder
 import kotlinx.serialization.encoding.Encoder
 
-@Serializable(with = DestinyStatCategory.Serializer::class)
-enum class DestinyStatCategory(
+@Serializable(with = ItemLocation.Serializer::class)
+enum class ItemLocation(
     val id: Int
 ) {
-    Gameplay(0), Weapon(1), Defense(2), Primary(3);
+    Unknown(0), Inventory(1), Vault(2), Vendor(3), Postmaster(4);
 
-    object Serializer: KSerializer<DestinyStatCategory> {
+    object Serializer: KSerializer<ItemLocation> {
         private val intSerializer = Int.serializer()
         override val descriptor = intSerializer.descriptor
 
-        override fun serialize(encoder: Encoder, value: DestinyStatCategory) {
+        override fun serialize(encoder: Encoder, value: ItemLocation) {
             intSerializer.serialize(encoder, value.id)
         }
 
-        override fun deserialize(decoder: Decoder): DestinyStatCategory {
+        override fun deserialize(decoder: Decoder): ItemLocation {
             val id = intSerializer.deserialize(decoder)
             return values().first { it.id == id }
         }

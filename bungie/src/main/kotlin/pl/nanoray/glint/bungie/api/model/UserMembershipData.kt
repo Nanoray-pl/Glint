@@ -1,7 +1,6 @@
-package pl.nanoray.glint.bungie.api
+package pl.nanoray.glint.bungie.api.model
 
 import kotlinx.serialization.Serializable
-import pl.nanoray.glint.bungie.api.custom.GeneralUser
 
 @Serializable
 data class UserMembershipData(

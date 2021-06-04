@@ -1,5 +1,6 @@
 dependencies {
 	compileOnly project(':core')
+	api 'io.mikael:urlbuilder:2.0.9'
 }
 
 test {
