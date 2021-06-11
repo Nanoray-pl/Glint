@@ -18,7 +18,7 @@ internal class OkHttpClient(
     private val client: Client
 ): SingleHttpClient {
     override fun requestSingle(request: HttpRequest): Single<HttpResponse> {
-        val contentType = requireNotNull(request.headers["Content-Type"]) { "`Content-Type` is a required header." }
+        val contentType by lazy { requireNotNull(request.headers["Content-Type"]) { "`Content-Type` is a required header." } }
         val tag = UUID.randomUUID()
         val requestBuilder = Request.Builder().url(request.url).tag(tag)
         when (request.method) {
@@ -53,7 +53,11 @@ internal class OkHttpClient(
                     }
 
                     override fun onResponse(call: Call, response: Response) {
-                        emitter.onSuccess(HttpResponse(response.code, response.headers.toMap(), response.body?.bytes() ?: ByteArray(0)))
+                        emitter.onSuccess(HttpResponse(
+                            response.code,
+                            response.headers.toMultimap().mapValues { it.value.last() },
+                            response.body?.bytes() ?: ByteArray(0)
+                        ))
                     }
                 })
             }

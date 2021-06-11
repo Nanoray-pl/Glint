@@ -3,7 +3,10 @@ package pl.nanoray.glint.bungie
 import com.github.scribejava.core.builder.ServiceBuilder
 import com.github.scribejava.core.oauth.OAuth20Service
 import pl.nanoray.glint.ConfigManager
+import pl.nanoray.glint.bungie.api.service.ManifestService
+import pl.nanoray.glint.bungie.api.service.http.HttpManifestService
 import pl.nanoray.glint.getConfig
+import pl.nanoray.glint.http.HttpRequestBuilder
 import pl.nanoray.glint.http.SingleHttpClientFactory
 import pl.nanoray.glint.http.oauth.OAuth2RedirectManager
 import pl.nanoray.glint.http.oauth.OAuth2SingleHttpClientManager
@@ -28,6 +31,7 @@ class BungiePlugin(
 	private val configManager: ConfigManager by resolver.inject()
 	private val slashCommandManager: SlashCommandManager by resolver.inject()
 	private val httpClientFactory: SingleHttpClientFactory by resolver.inject()
+	private val httpRequestBuilder: HttpRequestBuilder by resolver.inject()
 	private val redirectManager: OAuth2RedirectManager by resolver.inject()
 	private val storePlugin: StorePlugin by resolver.inject()
 
@@ -38,6 +42,8 @@ class BungiePlugin(
 	private val pluginContainer = Container(container)
 	private val tokenParser: TokenParser<BungieToken> by pluginContainer.inject()
 	private val httpClientManager: OAuth2SingleHttpClientManager<UserIdentifier, BungieToken> by pluginContainer.inject()
+	private val manifestService: ManifestService by pluginContainer.inject()
+	private val manifestManager: ManifestManager by pluginContainer.inject()
 
 	private val tokenStore = ConfigStore<Map<UserIdentifier, BungieToken>>(resolver, "${this::class.qualifiedName!!}.tokens")
 		.replacingNull(emptyMap())
@@ -49,10 +55,14 @@ class BungiePlugin(
 		get() = setOf(bungieLinkCommand)
 
 	init {
+		register<ManifestManager> { LatestVersionWithDiskStorageManifestManager(config.manifestStoragePath, httpRequestBuilder, httpClient, manifestService, config.apiUrl) }
 		pluginContainer.register<TokenParser<BungieToken>> { BungieTokenParser }
 		pluginContainer.register<OAuth2SingleHttpClientManager<UserIdentifier, BungieToken>> { StoreOAuth2SingleHttpClientManager(httpClient, tokenStore, redirectManager, service, tokenParser) }
+		pluginContainer.register<ManifestService> { HttpManifestService(httpClient, httpRequestBuilder, baseUrl = config.apiUrl) }
 		slashCommandManager.registerSlashCommandProvider(this)
 		storePlugin.registerThrottleStore(tokenStore)
+
+		manifestManager // Initialize
 	}
 
 	override fun onUnload() {

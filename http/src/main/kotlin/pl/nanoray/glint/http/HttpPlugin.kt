@@ -1,5 +1,12 @@
 package pl.nanoray.glint.http
 
-import pl.shockah.unikorn.plugin.Plugin
+import pl.nanoray.glint.plugin.ContainerEnabledPlugin
+import pl.shockah.unikorn.dependency.Container
 
-class HttpPlugin: Plugin
+class HttpPlugin(
+    container: Container
+): ContainerEnabledPlugin(container) {
+    init {
+        register<HttpRequestBuilder> { DefaultHttpRequestBuilder }
+    }
+}
