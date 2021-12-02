@@ -1,8 +1,8 @@
 package pl.nanoray.glint.plugin
 
+import com.charleskorn.kaml.Yaml
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.json.Json
-import net.mamoe.yamlkt.Yaml
 import pl.shockah.unikorn.collection.mapValid
 import pl.shockah.unikorn.plugin.PluginInfoProvider
 import pl.shockah.unikorn.plugin.impl.FilePluginInfo
@@ -28,7 +28,7 @@ internal class PathPluginInfoProvider(
 
 		ZipInputStream(BufferedInputStream(Files.newInputStream(jarPath))).use { zip ->
 			val handlers: List<Pair<List<String>, (String) -> FilePluginInfo.Base?>> = listOf(
-				listOf("yml", "yaml") to { Yaml.Default.decodeFromString(it) },
+				listOf("yml", "yaml") to { Yaml.default.decodeFromString(it) },
 				listOf("json") to { Json.Default.decodeFromString(it) }
 			)
 			while (true) {

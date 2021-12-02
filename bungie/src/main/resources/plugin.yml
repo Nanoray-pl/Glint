@@ -4,4 +4,4 @@ dependencies:
   - {identifier: pl.nanoray.glint.http}
   - {identifier: pl.nanoray.glint.http.oauth}
   - {identifier: pl.nanoray.glint.store}
-  - {identifier: pl.nanoray.glint.slashcommand}
+  - {identifier: pl.nanoray.glint.messagecommand}

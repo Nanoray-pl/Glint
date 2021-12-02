@@ -42,3 +42,4 @@ typealias UserIdentifier = SnowflakeIdentifier<User>
 typealias AudioChannelIdentifier = SnowflakeIdentifier<AudioChannel>
 typealias VoiceChannelIdentifier = SnowflakeIdentifier<VoiceChannel>
 typealias WebhookIdentifier = SnowflakeIdentifier<Webhook>
+typealias MessageIdentifier = SnowflakeIdentifier<Message>

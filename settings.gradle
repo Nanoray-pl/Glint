@@ -1,8 +1,26 @@
+// Core
 include 'core'
-include 'command', 'slash-command', 'message-command'
 include 'owner'
+
+// Command systems
+include 'command'
+include 'slash-command'
+include 'message-command'
+
+// Storage
 include 'store'
+
+// Interaction
 include 'voice-text-channel'
+
+// Moderation
+include 'spam-moderation'
+
+// HTTP requests
+include 'http'
+include 'http-oauth'
+include 'http-okhttp'
+
+// Gaming
 include 'ranking'
-include 'http', 'http-oauth', 'http-okhttp'
 include 'bungie'
