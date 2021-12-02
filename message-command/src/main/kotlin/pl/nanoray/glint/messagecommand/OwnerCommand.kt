@@ -2,6 +2,7 @@ package pl.nanoray.glint.messagecommand
 
 import net.dv8tion.jda.api.EmbedBuilder
 import net.dv8tion.jda.api.JDA
+import net.dv8tion.jda.api.MessageBuilder
 import net.dv8tion.jda.api.entities.Message
 import pl.nanoray.glint.command.CommandPredicate
 import pl.nanoray.glint.jdaextensions.UserIdentifier
@@ -23,10 +24,12 @@ internal class OwnerCommand(
 
 	override fun handleCommand(message: Message, options: Unit) {
 		message.reply(
-			EmbedBuilder()
-				.setTitle("Bot owners")
-				.appendDescription(ownerManager.owners.map { jda.retrieveUser(it).complete() }.joinToString("\n") { "${it.asMention} (${it.asTag})" })
-				.build()
+			MessageBuilder(
+				EmbedBuilder()
+					.setTitle("Bot owners")
+					.appendDescription(ownerManager.owners.map { jda.retrieveUser(it).complete() }.joinToString("\n") { "${it.asMention} (${it.asTag})" })
+					.build()
+			).build()
 		).queue()
 	}
 

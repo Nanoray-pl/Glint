@@ -17,7 +17,7 @@ abstract class BaseHttpBungieService(
         val errorCode: Int
     ): Exception()
 
-    protected inline fun <reified Response, reified T: ApiResponse<Response>> Single<HttpResponse>.deserialize(): Single<Response> {
+    protected inline fun <reified Response: Any, reified T: ApiResponse<Response>> Single<HttpResponse>.deserialize(): Single<Response> {
         return map { jsonFormat.decodeFromString(serializer<T>(), String(it.data)) }
             .flatMap {
                 return@flatMap when {

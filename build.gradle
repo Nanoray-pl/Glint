@@ -3,7 +3,7 @@ import java.nio.file.Files
 import java.nio.file.StandardCopyOption
 
 buildscript {
-	ext.kotlinVersion = '1.5.0'
+	ext.kotlinVersion = '1.6.0'
 	ext.unikornVersion = '1c1f61e0f90b3c791b9d842fe69a999a9f5d0a6c'
 	ext.junitVersion = '5.3.2'
 

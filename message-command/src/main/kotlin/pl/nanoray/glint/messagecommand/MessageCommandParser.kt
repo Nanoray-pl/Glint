@@ -247,6 +247,7 @@ internal class MessageCommandParserImpl(
 						argumentWords += builder.toString()
 						builder.clear()
 					}
+					else -> { } // TODO: is this right?
 				}
 			}
 			if (builder.isNotEmpty())

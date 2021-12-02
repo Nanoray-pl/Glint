@@ -1,6 +1,7 @@
 package pl.nanoray.glint.messagecommand
 
 import net.dv8tion.jda.api.EmbedBuilder
+import net.dv8tion.jda.api.MessageBuilder
 import net.dv8tion.jda.api.entities.Message
 import net.dv8tion.jda.api.entities.User
 import pl.nanoray.glint.command.CommandPredicate
@@ -68,14 +69,16 @@ internal class HelpCommand(
 	private fun handleListCommand(message: Message) {
 		val groupedCommands = commandManager.messageCommands.sortedBy { it.name.lowercase() }.groupBy { it.name.first().lowercase() }
 		message.reply(
-			EmbedBuilder().apply {
-				addField(
-					"Command list",
-					groupedCommands.entries.joinToString("\n") { it.value.joinToString(", ") { "`${it.name}`" } },
-					false
-				)
-				addCommandInfoFields(message.author, listOf(this@HelpCommand))
-			}.build()
+			MessageBuilder(
+				EmbedBuilder().apply {
+					addField(
+						"Command list",
+						groupedCommands.entries.joinToString("\n") { it.value.joinToString(", ") { "`${it.name}`" } },
+						false
+					)
+					addCommandInfoFields(message.author, listOf(this@HelpCommand))
+				}.build()
+			).build()
 		).queue()
 	}
 
@@ -93,11 +96,13 @@ internal class HelpCommand(
 			}
 			if (nameChainLeft.isEmpty()) {
 				message.reply(
-					EmbedBuilder().apply {
-						setTitle("Command `${commandChain.joinToString(" ") { it.name }}`")
-						appendDescription(commandChain.last().description)
-						addCommandInfoFields(message.author, commandChain)
-					}.build()
+					MessageBuilder(
+						EmbedBuilder().apply {
+							setTitle("Command `${commandChain.joinToString(" ") { it.name }}`")
+							appendDescription(commandChain.last().description)
+							addCommandInfoFields(message.author, commandChain)
+						}.build()
+					).build()
 				).queue()
 				return true
 			} else {

@@ -39,5 +39,6 @@ typealias RoleIdentifier = SnowflakeIdentifier<Role>
 typealias StoreChannelIdentifier = SnowflakeIdentifier<StoreChannel>
 typealias TextChannelIdentifier = SnowflakeIdentifier<TextChannel>
 typealias UserIdentifier = SnowflakeIdentifier<User>
+typealias AudioChannelIdentifier = SnowflakeIdentifier<AudioChannel>
 typealias VoiceChannelIdentifier = SnowflakeIdentifier<VoiceChannel>
 typealias WebhookIdentifier = SnowflakeIdentifier<Webhook>

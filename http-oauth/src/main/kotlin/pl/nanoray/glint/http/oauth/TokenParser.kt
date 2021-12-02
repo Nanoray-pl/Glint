@@ -6,7 +6,7 @@ import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.json.Json
-import java.util.concurrent.TimeUnit
+import kotlin.time.DurationUnit
 import kotlin.time.toDuration
 
 interface TokenParser<Token: OAuth2Token> {
@@ -26,8 +26,8 @@ object SimpleTokenParser: TokenParser<SimpleOAuth2Token> {
 		val now = Clock.System.now()
 		return SimpleOAuth2Token(
 			now,
-			SingleToken(apiToken.accessToken, apiToken.expiresIn?.let { now + it.toDuration(TimeUnit.SECONDS) }),
-			apiToken.refreshToken?.let { SingleToken(it, extraTokenInfo.refreshExpiresIn?.let { now + it.toDuration(TimeUnit.SECONDS) }) }
+			SingleToken(apiToken.accessToken, apiToken.expiresIn?.let { now + it.toDuration(DurationUnit.SECONDS) }),
+			apiToken.refreshToken?.let { SingleToken(it, extraTokenInfo.refreshExpiresIn?.let { now + it.toDuration(DurationUnit.SECONDS) }) }
 		)
 	}
 }

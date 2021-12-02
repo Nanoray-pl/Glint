@@ -10,7 +10,7 @@ import kotlinx.serialization.json.Json
 import pl.nanoray.glint.http.oauth.OAuth2Token
 import pl.nanoray.glint.http.oauth.SingleToken
 import pl.nanoray.glint.http.oauth.TokenParser
-import java.util.concurrent.TimeUnit
+import kotlin.time.DurationUnit
 import kotlin.time.toDuration
 
 @Serializable
@@ -35,9 +35,8 @@ object BungieTokenParser: TokenParser<BungieToken> {
 		val now = Clock.System.now()
 		return BungieToken(
 			now,
-			SingleToken(apiToken.accessToken, apiToken.expiresIn?.let { now + it.toDuration(TimeUnit.SECONDS) }),
-			apiToken.refreshToken?.let { SingleToken(it, extraTokenInfo.refreshExpiresIn?.let { now + it.toDuration(
-				TimeUnit.SECONDS) }) },
+			SingleToken(apiToken.accessToken, apiToken.expiresIn?.let { now + it.toDuration(DurationUnit.SECONDS) }),
+			apiToken.refreshToken?.let { SingleToken(it, extraTokenInfo.refreshExpiresIn?.let { now + it.toDuration(DurationUnit.SECONDS) }) },
 			extraTokenInfo.membershipId
 		)
 	}

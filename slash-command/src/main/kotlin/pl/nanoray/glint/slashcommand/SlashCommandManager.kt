@@ -6,7 +6,7 @@ import net.dv8tion.jda.api.events.interaction.SlashCommandEvent
 import pl.nanoray.glint.jdaextensions.GuildIdentifier
 import pl.nanoray.glint.jdaextensions.getGuild
 import pl.nanoray.glint.jdaextensions.identifier
-import pl.nanoray.glint.jdaextensions.toCompletable
+import pl.nanoray.glint.jdaextensions.toSingle
 import pl.shockah.unikorn.dependency.Resolver
 import pl.shockah.unikorn.dependency.inject
 import javax.annotation.CheckReturnValue
@@ -59,7 +59,8 @@ internal class SlashCommandManagerImpl(
 	override fun updateGlobalSlashCommands(): Completable {
 		if (globalCommandsAsGuildCommands)
 			return jda.updateCommands()
-				.toCompletable()
+				.toSingle()
+				.ignoreElement()
 
 		val commands = commandProviders.flatMap { it.globalSlashCommands }
 		globalCommands.clear()
@@ -67,7 +68,8 @@ internal class SlashCommandManagerImpl(
 		val commandData = commands.map { slashCommandDataParser.getSlashCommandData(it) }
 		return jda.updateCommands()
 			.addCommands(commandData)
-			.toCompletable()
+			.toSingle()
+			.ignoreElement()
 	}
 
 	@CheckReturnValue
@@ -84,7 +86,8 @@ internal class SlashCommandManagerImpl(
 		val commandData = commands.map { slashCommandDataParser.getSlashCommandData(it) }
 		return guildEntity.updateCommands()
 			.addCommands(commandData)
-			.toCompletable()
+			.toSingle()
+			.ignoreElement()
 	}
 
 	@CheckReturnValue

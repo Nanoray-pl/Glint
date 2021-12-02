@@ -10,13 +10,9 @@ import pl.nanoray.glint.store.Store
 import java.io.Closeable
 import java.net.URL
 import java.util.*
-import java.util.concurrent.TimeUnit
 import java.util.concurrent.locks.ReentrantLock
 import kotlin.concurrent.withLock
-import kotlin.time.Duration
-import kotlin.time.TimeMark
-import kotlin.time.TimeSource
-import kotlin.time.toDuration
+import kotlin.time.*
 
 abstract class OAuth2HttpClient<UserId, Token: OAuth2Token>(
 	protected val wrapped: SingleHttpClient,
@@ -43,7 +39,7 @@ abstract class OAuth2HttpClient<UserId, Token: OAuth2Token>(
 	private val handler = Handler()
 	private val authorizationRequests = mutableListOf<AuthorizationRequest<UserId>>()
 
-	fun startAuthorization(timeout: Duration = 15.toDuration(TimeUnit.MINUTES)): URL {
+	fun startAuthorization(timeout: Duration = 15.toDuration(DurationUnit.MINUTES)): URL {
 		return lock.withLock {
 			val timeoutMark = TimeSource.Monotonic.markNow() + timeout
 			val id = UUID.randomUUID()

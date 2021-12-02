@@ -27,13 +27,13 @@ data class SlashCommandOptionsData(
 
 	fun asCommandData(name: String, description: String): CommandData {
 		var data = CommandData(name, description)
-		options.forEach { data = data.addOption(it) }
+		options.forEach { data = data.addOptions(it) }
 		return data
 	}
 
 	fun asSubcommandData(name: String, description: String): SubcommandData {
 		var data = SubcommandData(name, description)
-		options.forEach { data = data.addOption(it) }
+		options.forEach { data = data.addOptions(it) }
 		return data
 	}
 }
@@ -48,15 +48,15 @@ fun SlashCommandDataParser.getSlashCommandData(command: SlashCommand): CommandDa
 		is SlashCommand.Simple<*> -> return getSlashCommandOptionsData(command.optionsKlass).asCommandData(command.name, command.description)
 		is SlashCommand.WithSubcommands -> {
 			var commandData = CommandData(command.name, command.description)
-			command.subcommands.forEach { commandData = commandData.addSubcommand(getSlashCommandOptionsData(it.optionsKlass).asSubcommandData(it.name, it.description)) }
+			command.subcommands.forEach { commandData = commandData.addSubcommands(getSlashCommandOptionsData(it.optionsKlass).asSubcommandData(it.name, it.description)) }
 			return commandData
 		}
 		is SlashCommand.WithSubcommandGroups -> {
 			var commandData = CommandData(command.name, command.description)
 			command.groups.forEach {
 				var subcommandGroupData = SubcommandGroupData(it.name, it.description)
-				it.subcommands.forEach { subcommandGroupData = subcommandGroupData.addSubcommand(getSlashCommandOptionsData(it.optionsKlass).asSubcommandData(it.name, it.description)) }
-				commandData = commandData.addSubcommandGroup(subcommandGroupData)
+				it.subcommands.forEach { subcommandGroupData = subcommandGroupData.addSubcommands(getSlashCommandOptionsData(it.optionsKlass).asSubcommandData(it.name, it.description)) }
+				commandData = commandData.addSubcommandGroups(subcommandGroupData)
 			}
 			return commandData
 		}

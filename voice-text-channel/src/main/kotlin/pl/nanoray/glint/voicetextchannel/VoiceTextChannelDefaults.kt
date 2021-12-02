@@ -1,8 +1,8 @@
 package pl.nanoray.glint.voicetextchannel
 
-import java.util.concurrent.TimeUnit
+import kotlin.time.DurationUnit
 import kotlin.time.toDuration
 
 object VoiceTextChannelDefaults {
-	val historyDuration = 15.toDuration(TimeUnit.MINUTES)
+	val historyDuration = 15.toDuration(DurationUnit.MINUTES)
 }

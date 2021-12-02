@@ -2,6 +2,7 @@ package pl.nanoray.glint.voicetextchannel
 
 import net.dv8tion.jda.api.EmbedBuilder
 import net.dv8tion.jda.api.JDA
+import net.dv8tion.jda.api.MessageBuilder
 import net.dv8tion.jda.api.Permission
 import net.dv8tion.jda.api.entities.GuildChannel
 import net.dv8tion.jda.api.entities.Message
@@ -30,14 +31,16 @@ internal class VoiceTextCommand(
 
 	override fun handleCommand(message: Message, options: Unit) {
 		message.reply(
-			EmbedBuilder()
-				.setTitle("Voice + text mappings")
-				.appendDescription(voiceTextChannelManager.voiceTextChannelMappings.mapNotNull {
-					val voiceChannel = jda.getVoiceChannel(it.voiceChannel) ?: return@mapNotNull null
-					val textChannel = jda.getTextChannel(it.textChannel) ?: return@mapNotNull null
-					return@mapNotNull "${voiceChannel.asMention} ↔ ${textChannel.asMention}"
-				}.joinToString("\n"))
-				.build()
+			MessageBuilder(
+				EmbedBuilder()
+					.setTitle("Voice + text mappings")
+					.appendDescription(voiceTextChannelManager.voiceTextChannelMappings.mapNotNull {
+						val voiceChannel = jda.getVoiceChannel(it.voiceChannel) ?: return@mapNotNull null
+						val textChannel = jda.getTextChannel(it.textChannel) ?: return@mapNotNull null
+						return@mapNotNull "${voiceChannel.asMention} ↔ ${textChannel.asMention}"
+					}.joinToString("\n"))
+					.build()
+			).build()
 		).queue()
 	}
 
@@ -53,7 +56,7 @@ internal class VoiceTextCommand(
 		override val additionalDescription = "`voiceChannel` defaults to the voice channel you are currently connected to."
 
 		override fun handleCommand(message: Message, options: LinkOptions) {
-			val voiceChannel = options.voiceChannel ?: (message.channel as? GuildChannel)?.guild?.getMember(message.author)?.voiceState?.channel?.identifier
+			val voiceChannel = options.voiceChannel ?: ((message.channel as? GuildChannel)?.guild?.getMember(message.author)?.voiceState?.channel as? VoiceChannel)?.identifier
 			if (voiceChannel == null) {
 				message.reply("Unknown voice channel.").queue()
 				return

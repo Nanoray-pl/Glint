@@ -115,18 +115,18 @@ class LatestVersionWithDiskStorageManifestManager(
                     lock.withLock {
                         val filePath = getPath(manifest.version, name ?: property.name)
                         if (subject.hasValue() && subject.value!!.version == manifest.version) {
-                            return@withLock Single.just(subject.value)
+                            return@withLock Single.just(subject.value!!)
                         } else {
                             return@withLock Single.defer {
-                                return@defer lock.withLock {
+                                return@defer lock.withLock innerLock@ {
                                     if (filePath.exists() && filePath.isRegularFile()) {
-                                        return@withLock Single.just(filePath.readBytes())
+                                        return@innerLock Single.just(filePath.readBytes())
                                     } else {
                                         val request = httpRequestBuilder.buildRequest(
                                             HttpRequest.Method.GET,
                                             relativeUrlSupplier(manifest.jsonWorldComponentContentPaths["en"]!!).getUrl(baseBungieApiUrl)
                                         )
-                                        return@withLock httpClient.requestSingle(request)
+                                        return@innerLock httpClient.requestSingle(request)
                                             .map { it.data }
                                             .doOnSuccess {
                                                 filePath.parent.createDirectories()
@@ -137,10 +137,10 @@ class LatestVersionWithDiskStorageManifestManager(
                             }
                                 .map { it.decodeToString() }
                                 .map {
-                                    return@map lock.withLock {
+                                    return@map lock.withLock innerLock@ {
                                         val repository = JsonStringManifestRepository<Data>(manifest.version, it, mapDataType = mapDataType, jsonFormat = jsonFormat)
                                         subject.onNext(repository)
-                                        return@withLock repository
+                                        return@innerLock repository
                                     }
                                 }
                         }

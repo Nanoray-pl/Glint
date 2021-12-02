@@ -12,8 +12,8 @@ dependencies {
 	api 'org.jetbrains.kotlinx:kotlinx-serialization-properties:1.2.1'
 	api 'net.mamoe.yamlkt:yamlkt:0.9.0'
 
-//	api 'net.dv8tion:JDA:4.2.1_261'
-	api 'com.github.dv8fromtheworld:jda:5951675256d2418ed50fdfebc540438c4f6d001e'
+	api 'net.dv8tion:JDA:5.0.0-alpha.1'
+//	api 'com.github.dv8fromtheworld:jda:5951675256d2418ed50fdfebc540438c4f6d001e'
 	api 'com.xenomachina:kotlin-argparser:2.0.7'
 	api 'io.reactivex.rxjava3:rxkotlin:3.0.1'
 }

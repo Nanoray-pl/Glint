@@ -6,8 +6,8 @@ import kotlinx.serialization.Serializable
 import kotlinx.serialization.builtins.serializer
 import kotlinx.serialization.encoding.Decoder
 import kotlinx.serialization.encoding.Encoder
-import java.util.concurrent.TimeUnit
 import kotlin.time.Duration
+import kotlin.time.DurationUnit
 import kotlin.time.toDuration
 
 @Serializable
@@ -28,7 +28,7 @@ data class ApiResponse<Response>(
         }
 
         override fun deserialize(decoder: Decoder): Duration {
-            return intSerializer.deserialize(decoder).toDuration(TimeUnit.SECONDS)
+            return intSerializer.deserialize(decoder).toDuration(DurationUnit.SECONDS)
         }
     }
 }
