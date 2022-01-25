@@ -6,7 +6,7 @@ import io.reactivex.rxjava3.core.Observable
 import io.reactivex.rxjava3.core.Single
 import kotlinx.datetime.Clock
 import pl.nanoray.glint.http.*
-import pl.nanoray.glint.store.Store
+import pl.nanoray.glint.store.MutableStore
 import java.io.Closeable
 import java.net.URL
 import java.util.*
@@ -20,7 +20,7 @@ abstract class OAuth2HttpClient<UserId, Token: OAuth2Token>(
 	private val oAuth2RedirectManager: OAuth2RedirectManager,
 	private val service: OAuth20Service,
 	private val tokenParser: TokenParser<Token>,
-	private val tokenStore: Store<Token?>
+	private val tokenStore: MutableStore<Token?>
 ): Closeable {
 	class UnauthorizedException: Exception()
 	class CannotRefreshException: Exception()
@@ -136,7 +136,7 @@ class OAuth2SingleHttpClient<UserId, Token: OAuth2Token>(
 	oAuth2RedirectManager: OAuth2RedirectManager,
 	service: OAuth20Service,
 	tokenParser: TokenParser<Token>,
-	tokenStore: Store<Token?>
+	tokenStore: MutableStore<Token?>
 ): OAuth2HttpClient<UserId, Token>(wrapped, userId, oAuth2RedirectManager, service, tokenParser, tokenStore), SingleHttpClient {
 	override fun requestSingle(request: HttpRequest): Single<HttpResponse> {
 		return refreshIfNeededAndModifyRequest(request)
@@ -150,7 +150,7 @@ class OAuth2ObservableHttpClient<UserId, Token: OAuth2Token>(
 	oAuth2RedirectManager: OAuth2RedirectManager,
 	service: OAuth20Service,
 	tokenParser: TokenParser<Token>,
-	tokenStore: Store<Token?>
+	tokenStore: MutableStore<Token?>
 ): OAuth2HttpClient<UserId, Token>(wrapped, userId, oAuth2RedirectManager, service, tokenParser, tokenStore), ObservableHttpClient {
 	private val observableWrapped: ObservableHttpClient
 		get() = wrapped as ObservableHttpClient

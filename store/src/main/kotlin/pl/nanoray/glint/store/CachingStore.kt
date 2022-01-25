@@ -4,8 +4,8 @@ import java.util.concurrent.locks.ReentrantLock
 import kotlin.concurrent.withLock
 
 class CachingStore<T>(
-	private val wrapped: Store<T>
-): Store<T> {
+	private val wrapped: MutableStore<T>
+): MutableStore<T> {
 	private sealed class Value<T> {
 		class Cached<T>(
 			val value: T
@@ -34,6 +34,6 @@ class CachingStore<T>(
 		}
 }
 
-fun <T> Store<T>.caching(): CachingStore<T> {
+fun <T> MutableStore<T>.caching(): CachingStore<T> {
 	return CachingStore(this)
 }

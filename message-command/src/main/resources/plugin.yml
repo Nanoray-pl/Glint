@@ -3,3 +3,4 @@ pluginClassName: pl.nanoray.glint.messagecommand.MessageCommandPlugin
 dependencies:
 - {identifier: pl.nanoray.glint.command}
 - {identifier: pl.nanoray.glint.owner}
+- {identifier: pl.nanoray.glint.store}

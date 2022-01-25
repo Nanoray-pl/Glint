@@ -2,6 +2,7 @@ dependencies {
 	compileOnly project(':core')
 	compileOnly project(':command')
 	compileOnly project(':owner')
+	compileOnly project(':store')
 }
 
 test {

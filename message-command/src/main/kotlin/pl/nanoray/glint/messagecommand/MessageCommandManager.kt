@@ -1,7 +1,14 @@
 package pl.nanoray.glint.messagecommand
 
 import net.dv8tion.jda.api.entities.Message
+import net.dv8tion.jda.api.entities.TextChannel
 import pl.nanoray.glint.command.CommandPredicate
+import pl.nanoray.glint.jdaextensions.CategoryIdentifier
+import pl.nanoray.glint.jdaextensions.GuildIdentifier
+import pl.nanoray.glint.jdaextensions.TextChannelIdentifier
+import pl.nanoray.glint.jdaextensions.identifier
+import pl.nanoray.glint.store.Store
+import pl.nanoray.glint.store.map.MapStore
 import pl.shockah.unikorn.dependency.Resolver
 import pl.shockah.unikorn.dependency.inject
 import java.util.concurrent.locks.ReentrantLock
@@ -25,17 +32,11 @@ interface MessageCommandManager {
 
 internal class MessageCommandManagerImpl(
 	resolver: Resolver,
-	private val argumentLineParsers: List<(Message) -> String?>
+	private val perTextChannelArgumentLineParsers: MapStore<TextChannelIdentifier, List<(Message) -> String?>?>,
+	private val perCategoryArgumentLineParsers: MapStore<CategoryIdentifier, List<(Message) -> String?>?>,
+	private val perGuildArgumentLineParsers: MapStore<GuildIdentifier, List<(Message) -> String?>?>,
+	private val globalArgumentLineParsers: Store<List<(Message) -> String?>>
 ): MessageCommandManager {
-	companion object {
-		operator fun invoke(resolver: Resolver, prefixes: List<String>): MessageCommandManagerImpl {
-			return MessageCommandManagerImpl(
-				resolver,
-				prefixes.map { prefix ->  { message -> message.contentRaw.takeIf { it.startsWith(prefix) }?.drop(prefix.length)?.trim() } }
-			)
-		}
-	}
-
 	private val commandParser: MessageCommandParser by resolver.inject()
 
 	private val lock = ReentrantLock()
@@ -54,6 +55,11 @@ internal class MessageCommandManagerImpl(
 
 	override fun handleMessageCommand(message: Message): Boolean {
 		lock.withLock {
+			val textChannelGetter: () -> List<(Message) -> String?>? = { (message.channel as? TextChannel)?.identifier?.let { perTextChannelArgumentLineParsers[it] } }
+			val categoryGetter: () -> List<(Message) -> String?>? = { message.category?.identifier?.let { perCategoryArgumentLineParsers[it] } }
+			val guildGetter: () -> List<(Message) -> String?>? = { (message.channel as? TextChannel)?.guild?.identifier?.let { perGuildArgumentLineParsers[it] } }
+			val argumentLineParsers = textChannelGetter() ?: categoryGetter() ?: guildGetter() ?: globalArgumentLineParsers.value
+
 			for (argumentLineParser in argumentLineParsers) {
 				fun handleCommand(command: MessageCommand<*>, rawArgumentLine: String): Boolean {
 					val commandNameAndArgumentLine = commandParser.parseMessageCommandNameAndArgumentLine(message, rawArgumentLine)

@@ -5,7 +5,7 @@ import net.dv8tion.jda.api.JDA
 import pl.nanoray.glint.jdaextensions.TextChannelIdentifier
 import pl.nanoray.glint.jdaextensions.VoiceChannelIdentifier
 import pl.nanoray.glint.jdaextensions.getVoiceChannel
-import pl.nanoray.glint.store.Store
+import pl.nanoray.glint.store.MutableStore
 import pl.nanoray.glint.utilities.WithDefault
 import pl.shockah.unikorn.collection.removeFirst
 import pl.shockah.unikorn.dependency.Resolver
@@ -18,7 +18,7 @@ import kotlin.time.Duration
 
 internal class VoiceTextChannelManagerImpl(
 	private val resolver: Resolver,
-	private val store: Store<Set<ChannelMapping>>
+	private val store: MutableStore<Set<ChannelMapping>>
 ): WritableVoiceTextChannelManager {
 	private val jda: JDA by resolver.inject()
 	private val discordWorker: DiscordWorker by resolver.inject()

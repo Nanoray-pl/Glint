@@ -19,6 +19,7 @@ import pl.nanoray.glint.slashcommand.SlashCommandManager
 import pl.nanoray.glint.slashcommand.SlashCommandProvider
 import pl.nanoray.glint.store.ConfigStore
 import pl.nanoray.glint.store.StorePlugin
+import pl.nanoray.glint.store.map.toMutableMapStore
 import pl.nanoray.glint.store.replacingNull
 import pl.nanoray.glint.store.throttling
 import pl.shockah.unikorn.dependency.Container
@@ -57,7 +58,7 @@ class BungiePlugin(
 	init {
 		register<ManifestManager> { LatestVersionWithDiskStorageManifestManager(config.manifestStoragePath, httpRequestBuilder, httpClient, manifestService, config.apiUrl) }
 		pluginContainer.register<TokenParser<BungieToken>> { BungieTokenParser }
-		pluginContainer.register<OAuth2SingleHttpClientManager<UserIdentifier, BungieToken>> { StoreOAuth2SingleHttpClientManager(httpClient, tokenStore, redirectManager, service, tokenParser) }
+		pluginContainer.register<OAuth2SingleHttpClientManager<UserIdentifier, BungieToken>> { StoreOAuth2SingleHttpClientManager(httpClient, tokenStore.toMutableMapStore(), redirectManager, service, tokenParser) }
 		pluginContainer.register<ManifestService> { HttpManifestService(httpClient, httpRequestBuilder, baseUrl = config.apiUrl) }
 		slashCommandManager.registerSlashCommandProvider(this)
 		storePlugin.registerThrottleStore(tokenStore)

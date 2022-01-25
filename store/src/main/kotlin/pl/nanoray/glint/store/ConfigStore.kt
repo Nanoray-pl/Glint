@@ -10,8 +10,12 @@ class ConfigStore<T>(
 	resolver: Resolver,
 	private val type: KType,
 	private val configName: String
-): Store<T?> {
+): MutableStore<T?> {
 	companion object {
+		inline operator fun <reified T> invoke(resolver: Resolver): ConfigStore<T> {
+			return ConfigStore(resolver, typeOf<T>(), T::class.qualifiedName!!)
+		}
+
 		inline operator fun <reified T> invoke(resolver: Resolver, configName: String): ConfigStore<T> {
 			return ConfigStore(resolver, typeOf<T>(), configName)
 		}
