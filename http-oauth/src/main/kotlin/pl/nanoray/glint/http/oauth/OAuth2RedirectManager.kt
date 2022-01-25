@@ -7,7 +7,6 @@ import java.security.KeyStore
 import javax.net.ssl.KeyManagerFactory
 import kotlin.io.path.readBytes
 
-
 interface OAuth2RedirectHandler {
 	fun handleOAuth2Redirect(state: String, parameters: Map<String, String>): HttpResponse?
 }
@@ -51,7 +50,7 @@ internal class OAuth2RedirectManagerImpl(
 
 	override fun serve(session: IHTTPSession?): Response {
 		if (session == null)
-			return super.serve(session)
+			return super.serve(null)
 
 		val parameters = session.parameters.mapValues { it.value.last() }
 		val state = parameters["state"] ?: return serveError("Missing `state` parameter.")

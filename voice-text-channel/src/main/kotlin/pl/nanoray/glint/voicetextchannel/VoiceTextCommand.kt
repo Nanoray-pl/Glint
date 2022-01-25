@@ -20,6 +20,7 @@ import kotlin.reflect.typeOf
 internal class VoiceTextCommand(
 	resolver: Resolver
 ): MessageCommand<Unit>(typeOf<Unit>()) {
+	@Suppress("SpellCheckingInspection")
 	override val name = "voicetext"
 	override val description = "List all of the linked voice + text channel pairs."
 	override val subcommands = listOf(Link(), Unlink())

@@ -3,7 +3,7 @@ import java.nio.file.Files
 import java.nio.file.StandardCopyOption
 
 buildscript {
-	ext.kotlinVersion = '1.6.0'
+	ext.kotlinVersion = '1.6.10'
 	ext.unikornVersion = '1c1f61e0f90b3c791b9d842fe69a999a9f5d0a6c'
 	ext.junitVersion = '5.3.2'
 
@@ -23,6 +23,9 @@ buildscript {
 
 project.subprojects.each {project ->
 	project.ext.isPlugin = (["json", "yml", "yaml"].any { new File(project.projectDir, "src/main/resources/plugin.${it}").exists() })
+	if (project.ext.isPlugin) {
+		project.ext.isIgnored = new File(project.projectDir, ".ignored").exists()
+	}
 }
 
 subprojects {
@@ -69,7 +72,7 @@ subprojects {
 		}
 	}
 
-	if (project.isPlugin) {
+	if (project.isPlugin && !project.isIgnored) {
 		task copyForTest(type: Copy) {
 			group = 'build'
 			dependsOn 'shadowJar'

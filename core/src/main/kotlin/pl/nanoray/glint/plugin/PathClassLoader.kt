@@ -15,7 +15,7 @@ class PathClassLoader(
 			return super.findClass(name)
 		} catch (_: ClassNotFoundException) {
 			if (name == null)
-				return super.findClass(name)
+				return super.findClass(null)
 			for (path in paths) {
 				val filePath = path.resolve("${name.replace(".", "/")}.class")
 				if (filePath.exists() && filePath.isRegularFile()) {
@@ -30,7 +30,7 @@ class PathClassLoader(
 	override fun findResource(name: String?): URL {
 		super.findResource(name)?.let { return it }
 		if (name == null)
-			return super.findResource(name)
+			return super.findResource(null)
 		for (path in paths) {
 			val filePath = path.resolve(name)
 			if (filePath.exists())

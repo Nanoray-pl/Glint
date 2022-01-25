@@ -6,20 +6,20 @@ import kotlin.properties.Delegates
 import kotlin.random.Random
 
 class ErrorSimulationContext(
-    errorOccurence: Occurence
+    errorOccurrence: Occurrence
 ) {
-    sealed class Occurence {
-        object Never: Occurence()
-        object Always: Occurence()
+    sealed class Occurrence {
+        object Never: Occurrence()
+        object Always: Occurrence()
 
         data class OneIn(
             val cycleLength: Int
-        ): Occurence()
+        ): Occurrence()
 
         data class Chance(
             val chance: Double,
             val random: Random
-        ): Occurence()
+        ): Occurrence()
     }
 
     enum class Mode {
@@ -28,18 +28,18 @@ class ErrorSimulationContext(
 
     private var requestCounter = 0
 
-    var errorOccurence: Occurence by Delegates.observable(errorOccurence) { _, _, newValue ->
-        if (newValue is Occurence.OneIn)
+    var errorOccurrence: Occurrence by Delegates.observable(errorOccurrence) { _, _, newValue ->
+        if (newValue is Occurrence.OneIn)
             requestCounter = 0
     }
 
     fun updateCounterAndReturnIfShouldSucceed(): Boolean {
-        when (val errorOccurence = errorOccurence) {
-            Occurence.Never -> return true
-            Occurence.Always -> return false
-            is Occurence.Chance -> return errorOccurence.random.nextDouble() >= errorOccurence.chance
-            is Occurence.OneIn -> {
-                requestCounter = (requestCounter + 1) % errorOccurence.cycleLength
+        when (val errorOccurrence = errorOccurrence) {
+            Occurrence.Never -> return true
+            Occurrence.Always -> return false
+            is Occurrence.Chance -> return errorOccurrence.random.nextDouble() >= errorOccurrence.chance
+            is Occurrence.OneIn -> {
+                requestCounter = (requestCounter + 1) % errorOccurrence.cycleLength
                 return requestCounter != 0
             }
         }

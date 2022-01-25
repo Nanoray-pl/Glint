@@ -11,6 +11,7 @@ import pl.shockah.unikorn.dependency.inject
 class BungieLinkCommand(
 	resolver: Resolver
 ): SlashCommand.Simple<Unit>(Unit::class) {
+	@Suppress("SpellCheckingInspection")
 	override val name = "bungielink"
 	override val description = "Link your Discord account with your Bungie account."
 

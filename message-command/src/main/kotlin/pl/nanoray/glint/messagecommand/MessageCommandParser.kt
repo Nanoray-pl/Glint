@@ -141,7 +141,7 @@ internal class MessageCommandParserImpl(
 			val options = mutableListOf<CommandHelpEntry.Option>()
 			parameterLoop@ for (parameter in constructor.parameters) {
 				var foundAnnotation = false
-				parameter.takeIf { !foundAnnotation }?.findAnnotation<MessageCommand.Option.Named.Flag>()?.let {
+				parameter.findAnnotation<MessageCommand.Option.Named.Flag>()?.let {
 					foundAnnotation = true
 					options.add(CommandHelpEntry.Option(
 						it.name,

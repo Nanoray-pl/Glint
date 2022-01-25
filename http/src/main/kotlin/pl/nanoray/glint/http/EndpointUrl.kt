@@ -8,9 +8,9 @@ import java.net.URL
 data class EndpointUrl<PathParameters, QueryParameters>(
 	val baseUrl: URL
 ) {
-	class UnusuedPathParametersException(
+	class UnusedPathParametersException(
 		val parameters: Set<String>
-	): Exception("Unusued parameters: $parameters")
+	): Exception("Unused parameters: $parameters")
 
 	companion object {
 		@PublishedApi internal val format = Properties.Default
@@ -38,7 +38,7 @@ data class EndpointUrl<PathParameters, QueryParameters>(
 				builder = builder.withPath(newPath)
 			}
 			if (!ignoreUnusedPathParameters && unusedParameters.isNotEmpty())
-				throw UnusuedPathParametersException(unusedParameters)
+				throw UnusedPathParametersException(unusedParameters)
 			return builder.toUrl()
 		}
 	}

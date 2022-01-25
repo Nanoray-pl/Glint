@@ -29,7 +29,7 @@ data class DestinyProfileResponse(
 
             override fun deserialize(decoder: Decoder): Component {
                 val id = intSerializer.deserialize(decoder)
-                return Component.values().first { it.id == id }
+                return values().first { it.id == id }
             }
         }
     }

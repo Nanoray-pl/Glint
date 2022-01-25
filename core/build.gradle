@@ -1,3 +1,5 @@
+//file:noinspection SpellCheckingInspection
+
 dependencies {
 	implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8:$kotlinVersion"
 	implementation "org.jetbrains.kotlin:kotlin-reflect:$kotlinVersion"
@@ -13,7 +15,7 @@ dependencies {
 	// api 'net.mamoe.yamlkt:yamlkt:0.10.2'
 	api 'com.charleskorn.kaml:kaml:0.37.0'
 
-	api 'net.dv8tion:JDA:5.0.0-alpha.1'
+	api 'net.dv8tion:JDA:5.0.0-alpha.4'
 	// api 'com.github.dv8fromtheworld:jda:5951675256d2418ed50fdfebc540438c4f6d001e'
 	api 'com.xenomachina:kotlin-argparser:2.0.7'
 	api 'io.reactivex.rxjava3:rxkotlin:3.0.1'
